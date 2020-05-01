@@ -1,0 +1,22 @@
+version: '3'
+services:
+  dev:
+    image: node:12.16.3-alpine3.9
+    volumes:
+      - nodemodules:/usr/src/service/node_modules
+      - .:/usr/src/service
+    working_dir: /usr/src/service
+    command: npm run dev
+    ports:
+      - 3000:3000
+  database:
+    image: dannyben/alpine-mongo:latest
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodatabase:/data/db
+volumes:
+  nodemodules:
+    external: true
+  mongodatabase:
+    external: true

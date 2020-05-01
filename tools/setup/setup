@@ -1,0 +1,46 @@
+#!/bin/bash
+# This script can be used to setup the docker images, for development.
+# This takes one of the two arguments [ "full", "volume" ].
+# If no arguments are passed, it is considered as a full setup.
+# "full" should be used when setting up the system for first time.
+
+# Check if arguments are passed to this script
+OUT=$(docker volume inspect nodemodules mongodatabase 2>&1 | grep -o -m 1 'Error')
+CUR=$(dirname $(readlink -f $0))
+
+if [ -z "$1" ]
+    then
+    if [[ $OUT = "Error" ]]; then
+        echo "Creating volume nodemodules and mongodatabase"
+        docker volume create nodemodules
+        docker volume create mongodatabase
+    else
+        echo "Volume Exists. Exiting"
+    fi
+    exec "$CUR/../install-deps"
+elif [ "$1" = "full" ]; then
+    if [[ $OUT = "Error" ]]; then
+        echo "Creating volume nodemodules and mongodatabase"
+        docker volume create nodemodules
+        docker volume create mongodatabase
+    else
+        echo "Volume Exists. Exiting"
+    fi
+    exec "$CUR/../install-deps"
+elif [ "$1" = "volume" ]; then
+    if [[ $OUT = "Error" ]]; then
+        echo "Creating volume nodemodules and mongodatabase"
+        docker volume create nodemodules
+        docker volume create mongodatabase
+    else
+        echo "Volume Exists. Exiting"
+    fi
+else
+    echo "Illegal Arguments
+    Usage: setup [OPTION]
+    
+    Options:
+    full        Create a docker volume for node_modules and install the dependencies.
+                Suitable for first time run.
+    volume      Only create a docker volumes for node_modules and mongodatabase"
+fi

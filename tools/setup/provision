@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+
+echo "Running the provision script"
+
+RED='\033[0;31m'
+NC='\033[0m'
+
+set -x
+set -e
+set -o pipefail
+
+# Install Docker for Linux
+# Update the ppa
+sudo apt-get update
+# Install Docker dependencies
+sudo apt-get -y install apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+# Add Docker’s official GPG key:
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+# Set the stable repo
+sudo add-apt-repository -y \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+# Install docker
+sudo apt-get update && sudo apt-get -y install docker-ce docker-ce-cli containerd.io
+
+# Docker Compose Installation
+sudo curl -s -L "https://github.com/docker/compose/releases/download/1.25.5/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+# Add current user to docker group
+sudo usermod -aG docker $USER
+
+# Auto start the docker service on boot
+sudo systemctl enable docker
+
+# Set the default directory on login to ~/issue-tracker
+# Check for existing command in the .bashrc file, so that our .bashrc
+# file isn't populated with multiple statements
+if ! grep -q "cd ~/issue-tracker/" ~/.bashrc; then
+   echo "cd ~/issue-tracker/" >> ~/.bashrc
+fi
+
+set +x
+
+echo -e "Provisioning has ended partially."
+echo -e "$RED"
+echo "You have to boot into the system and run setup script to complete setting up the environment."
+echo -e "$NC"
+echo "Run the following commands one by one: 
+      vagrant ssh
+      tools/setup/setup full"

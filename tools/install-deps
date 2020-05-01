@@ -1,0 +1,3 @@
+#!/bin/bash
+CUR=$(dirname $(readlink -f $0))
+docker-compose -f $CUR/../docker-compose.builder.yml run --rm install

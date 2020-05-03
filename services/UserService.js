@@ -42,7 +42,7 @@ class UserService {
         return new Promise((resolve, reject) => {
             User.findOne({ zprn: zprn })
                 .then((user) => {
-                    return resolve(user);
+                    return user != undefined ? resolve(user) : reject(null);
                 })
                 .catch((err) => {
                     return reject(null);

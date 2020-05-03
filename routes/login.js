@@ -1,7 +1,5 @@
 const router = require("express").Router();
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const config = require("../config");
 const jwtService = require("../services/JwtService");
 
 const userService = require("../services/UserService");
@@ -32,26 +30,22 @@ router.post("/login", (req, res) => {
         userService
             .getUser(zprn)
             .then((user) => {
-                if (user != undefined) {
-                    bcrypt.compare(password, user.password, (error, match) => {
-                        if (error) {
-                            res.status(500).json({ msg: "Error occured" });
+                bcrypt.compare(password, user.password, (error, match) => {
+                    if (error) {
+                        res.status(500).json({ msg: "Error occured" });
+                    } else {
+                        if (match) {
+                            const token = jwtService.sign(user.department);
+                            token != null
+                                ? res.status(200).json({ token: token })
+                                : res.status(500).json({ msg: "Error!" });
                         } else {
-                            if (match) {
-                                const token = jwtService.sign(user.department);
-                                token != null
-                                    ? res.status(200).json({ token: token })
-                                    : res.status(500).json({ msg: "Error!" });
-                            } else {
-                                res.status(401).json({
-                                    msg: "Password doesn't match!",
-                                });
-                            }
+                            res.status(401).json({
+                                msg: "Password doesn't match!",
+                            });
                         }
-                    });
-                } else {
-                    res.status(200).json({ msg: "Not Found!" });
-                }
+                    }
+                });
             })
             .catch(() => {
                 res.status(401).json({ msg: "User not found!" });

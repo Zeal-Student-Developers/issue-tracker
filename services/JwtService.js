@@ -1,12 +1,11 @@
 const jwt = require("jsonwebtoken");
-const config = require("../config");
 
 class JwtService {
     constructor() {}
 
     // SIGN TOKEN
     sign(data) {
-        const token = jwt.sign({ data }, config.SECRET);
+        const token = jwt.sign({ data }, `${process.env.SECRET}`);
         return token;
     }
 
@@ -15,7 +14,7 @@ class JwtService {
         if (authHeader != undefined && authHeader != null) {
             const token = authHeader.split(" ")[1];
             try {
-                return jwt.verify(token, config.SECRET);
+                return jwt.verify(token, `${process.env.SECRET}`);
             } catch (error) {
                 return null;
             }

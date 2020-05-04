@@ -1,13 +1,12 @@
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
-const config = require("./config");
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 mongoose
-    .connect(config.MONGO, {
+    .connect(`${process.env.MONGO}`, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
         useCreateIndex: true,

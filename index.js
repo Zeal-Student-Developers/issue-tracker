@@ -10,6 +10,7 @@ mongoose
         useNewUrlParser: true,
         useUnifiedTopology: true,
         useCreateIndex: true,
+        useFindAndModify: true,
     })
     .then(() => console.log("Connected to mongodb"))
     .catch((err) => console.log(err));
@@ -20,7 +21,8 @@ app.get("/", (req, res) => {
     res.send("Hello World!");
 });
 
-app.use("/api/users/", require("./routes/login"));
+app.use("/api/auth/", require("./routes/auth"));
+app.use("/api/users/", require("./routes/user"));
 
 app.listen(port, () => {
     console.log(`Listening on port ${port}`);

@@ -5,13 +5,13 @@ class JwtService {
 
     // SIGN TOKEN
     sign(data) {
-        const token = jwt.sign({ data }, `${process.env.SECRET}`);
+        const token = jwt.sign({ ...data }, `${process.env.SECRET}`);
         return token;
     }
 
     // VERIFY TOKEN
     verify(authHeader) {
-        if (authHeader != undefined && authHeader != null) {
+        if (authHeader != undefined) {
             const token = authHeader.split(" ")[1];
             try {
                 return jwt.verify(token, `${process.env.SECRET}`);

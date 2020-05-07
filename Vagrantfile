@@ -1,6 +1,6 @@
 Vagrant.configure(2) do |config|
 
-    host_port = 8080
+    host_port = 3000
     host_ip_addr = "127.0.0.1"
 
     vm_num_cpus = "2"
@@ -22,6 +22,9 @@ Vagrant.configure(2) do |config|
     end
 
 $provision_script = <<SCRIPT
+RED='\033[0;31m'
+NC='\033[0m'
+
 set -x
 set -e
 set -o pipefail
@@ -35,7 +38,9 @@ if ! grep -q 'LC_ALL=en_US.UTF-8' /etc/default/locale; then
 fi
 
 if [ ! -w /srv/issue-tracker ]; then
+    echo -e "$RED"
     echo "The vagrant user is unable to write to Project directory"
+    echo -e "$NC"
 fi
 
 # Update the MOTD for users

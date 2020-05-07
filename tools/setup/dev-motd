@@ -5,5 +5,6 @@ This is the Issue-Tracker development environment.  Commands:
 * tools/setup/setup - Setup the development environment (Used only for setup)
 * tools/install-deps - Install / Update node module dependencies
 * tools/run-dev - Run the nodemon server ( Frequently used )
+* tools/stop-dev - Stop the nodemon server ( Frequently used )
 
 Post you issues regarding docker setup in discord using appropriate channels.

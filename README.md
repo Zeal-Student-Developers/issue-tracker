@@ -3,40 +3,42 @@
 ## Setup the dev env
 ### Windows
 1. Install [vagrant](https://www.vagrantup.com/docs/installation/) for your OS. Disable the hyper-v from [here](https://ugetfix.com/ask/how-to-disable-hyper-v-in-windows-10/).
-2. Install Git Bash (bundled with git) from [here](https://git-scm.com/downloads).
-3. Enable VT-x from your BIOS.
-4. Run Git Bash as administrator and run
+2. Install latest [VirtuaBox](https://www.virtualbox.org/wiki/Downloads) for your windows system. This is **required**.
+3. Install Git Bash (bundled with git) from [here](https://git-scm.com/downloads).
+4. Enable VT-x from your BIOS.
+5. Run Git Bash as administrator and run
     ```
     git config --global core.symlinks true
     ```
-5. Confirm the setting
+6. Confirm the setting
     ```
     git config core.symlinks
     ```
-    If you see true, you can go ahead.
-6. Clone this repository anywhere on your PC
+    If you see `true`, you can go ahead.
+7. Clone this repository anywhere on your PC
     ```bash
     git clone "https://github.com/Zeal-Student-Developers/issue-tracker.git"
     ```
-7. Run the following commands
+8. Run the following commands
     ```bash
     cd issue-tracker
     vagrant plugin install vagrant-vbguest
-    vagrant up
+    vagrant up --provider=virtualbox
     ```
-    First time it will run, it will take some time to download and setup the vm, and then provision it.
-8. Once vagrant is up and running, you need to connect to it
+    First time it will run, it will take some time to download and setup the vm, and then provision it. 
+    > Note: You may get *timed out* error and will probably need to run this command a several times to get it working. It's an issue with vagrant.
+9. Once vagrant is up and running, you need to connect to it
     ```bash
     vagrant ssh
     ```
-9. Run the following commands to complete the provisioning which was started earlier. This will setup the volumes required for node_modules and mongodb database. Also it will setup the containers for nodejs and mongodb.
+10. Run the following commands to complete the provisioning which was started earlier. This will setup the volumes required for node_modules and mongodb database. Also it will setup the containers for nodejs and mongodb.
     ```
     tools/setup/setup full
     ```
 
 ### Linux:
 
-1. Install Docker and Docker Compose.
+1. Install Docker and Docker Compose. You may need to enter your password while executing.
     ```bash
     sudo apt-get update
 
@@ -64,6 +66,10 @@
 
     # Add current user to docker group
     sudo usermod -aG docker $USER
+
+    # Make your scripts executable
+    cd YOUR_ISSUE_TRACKER_DIR
+    sudo chmod +x tools/* tools/setup/*
     ```
     **Reboot** your system.
 
@@ -74,7 +80,7 @@
 3. Run the following commands to setup the containers. This will setup the volumes required for node_modules and mongodb database. Also it will setup the containers for nodejs and mongodb.
     ```
     cd issue-tracker
-    tools/setup/setup
+    tools/setup/setup full
     ```
 
 ### Running the Application
@@ -88,10 +94,58 @@ or if you want the containers to run in the background (detached),
 tools/run-dev -d
 ```
 
-Open your web browser and go to `localhost:8080`. If you see `Hello World!` there, then you are good to go! 
+Open your web browser and go to `localhost:3000`. If you see `Hello World!` there, then you are good to go! 
 
 To develop the application simply open the repo and start making changes. These changes will be reflected in the server (as long as nodemon is running.)
 
 To stop the containers, if you did `tools/run-dev` without `-d` simply press `CTRL + C`. If you used `-d` switch then simply run `tools/stop-dev`
 
 > **Note** : Do not run npm or node in local machine. Use the vm. To install the dependencies instead of using `npm install module --save`, add your module name in `package.json` and run `tools/install-deps`
+
+## Shutdown and Restart the Dev Env
+
+### Windows
+
+Whenever you want to stop working you need to `halt` the vagrant vm. This will free all the resources that vagrant was using.
+```
+vagrant halt
+```
+When you want to start the dev env again, you need to `up` the vagrant vm.
+```
+vagrant up
+```
+When you feel, that you need to restart the vm, you have to `reload` the vagrant vm.
+```
+vagrant reload
+```
+If you want to clear everything and delete the vagrant vm,
+```
+vagrant destroy
+```
+After using vagrant `reload` and `up` you need to get into the vm using
+```
+vagrant ssh
+```
+and then of course you need to use the `tools/run-dev` and `tools/stop-dev` to start and stop the docker containers inside the vm as well.
+
+### Linux
+
+Nothing special is required and using just the `tools/stop-dev` and `tools/run-dev` are enough for starting and stopping the dev environment in Linux.
+
+## Known Issue
+
+* If you find *timed out* errors on Windows, you just need to retry `vagrant up` multiple times to get it working. It's an issue with vagrant.
+
+* If you find the error line
+```
+The vagrant user is unable to write to Project directory
+```
+while running the vagrant up command, then you probably have some write issues. We can solve this by doing the following. You need to `cd` into your `issue-tracker` directory. After that run the following :-
+```
+vagrant halt -f
+rm -rf .vagrant
+sudo chown -R 1000:$(id -g) .
+vagrant up
+```
+Remove `sudo` if you are on *Windows*.
+And hopefully the error is gone and you can resume your work.

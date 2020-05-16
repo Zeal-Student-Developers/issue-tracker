@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const randomBytes = require("crypto").randomBytes;
 
 class UserService {
     constructor() {}
@@ -6,14 +7,15 @@ class UserService {
     // ADD USER
     async addUser(zprn, firstName, lastName, password, department, role) {
         const user = new User({
-            zprn: zprn,
+            zprn: Number(zprn),
             role: role,
             firstName: firstName,
             lastName: lastName,
             department: department,
             password: password,
             role: role,
-            disabled: false,
+            isDisabled: false,
+            refreshToken: randomBytes(45).toString("hex") + "." + zprn,
         });
         return new Promise(async (resolve, reject) => {
             try {
@@ -29,7 +31,7 @@ class UserService {
     async getAllUsers() {
         return new Promise(async (resolve, reject) => {
             try {
-                const users = await User.find({ disabled: false });
+                const users = await User.find({ isDisabled: false });
                 return resolve(users);
             } catch (error) {
                 return reject(error);
@@ -43,7 +45,7 @@ class UserService {
             try {
                 const user = await User.findOne({
                     zprn: zprn,
-                    disabled: false,
+                    isDisabled: false,
                 });
                 return resolve(user);
             } catch (error) {
@@ -69,17 +71,21 @@ class UserService {
             } = newUser;
             try {
                 const user = await User.findOne({ zprn: zprn });
-                user.firstName =
-                    firstName != undefined ? firstName : user.firstName;
-                user.lastName =
-                    lastName != undefined ? lastName : user.lastName;
-                user.password =
-                    password != undefined ? password : user.password;
-                user.department =
-                    department != undefined ? department : user.department;
-                user.role = role != undefined ? role : user.role;
-                const result = await user.save();
-                return resolve(result);
+                if (user == null) {
+                    return reject(new Error("No user found"));
+                } else {
+                    user.firstName =
+                        firstName != undefined ? firstName : user.firstName;
+                    user.lastName =
+                        lastName != undefined ? lastName : user.lastName;
+                    user.password =
+                        password != undefined ? password : user.password;
+                    user.department =
+                        department != undefined ? department : user.department;
+                    user.role = role != undefined ? role : user.role;
+                    const result = await user.save();
+                    return resolve(result);
+                }
             } catch (error) {
                 console.log(error);
                 return reject(error);
@@ -87,7 +93,7 @@ class UserService {
         });
     }
 
-    async deleteUsers() {
+    async deleteAllUsers() {
         return new Promise(async (resolve, reject) => {
             try {
                 const result = await User.deleteMany({});
@@ -98,17 +104,13 @@ class UserService {
         });
     }
 
-    /* 
-    ! The deleted user still has the valid JWT token. The API can still te accessed with that token!
-      TODO: Somehow invalidate the deleted user's token(s)
-    */
     async deleteUser(zprn) {
         return new Promise(async (resolve, reject) => {
             try {
                 // const result = await User.deleteOne({ zprn: zprn });
                 const user = await User.findOneAndUpdate(
                     { zprn: zprn },
-                    { disabled: true }
+                    { isDisabled: true }
                 );
                 return resolve(user);
             } catch (error) {

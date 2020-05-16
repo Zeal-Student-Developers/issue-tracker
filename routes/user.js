@@ -182,9 +182,13 @@ router.post("/update/profile", async (req, res) => {
 /*
  * AUTHORITY: UPDATE USER DETAILS [ALL]
  */
-router.post("/update/details/:ID", async (req, res) => {
+router.post("/update/profile/:userID", async (req, res) => {
     try {
-        const userID = jwtService.verify(req.headers["authorization"]).userID;
+        const role = jwtService.verify(req.headers["authorization"]).role;
+        if (role === "student") {
+            res.status(403).send(new Error("FORBIDDEN", "Access denied"));
+            return;
+        }
     } catch (error) {
         res.status(403).send(new Error("FORBIDDEN", error.message));
         return;
@@ -195,24 +199,18 @@ router.post("/update/details/:ID", async (req, res) => {
                 new Error("BAD_REQUEST", "Required fields not provided")
             );
         } else {
-            const {
-                firstName,
-                lastName,
-                password,
-                department,
-                role,
-            } = req.body;
+            const password = req.body.password;
             const hashedPassword =
                 password != undefined
                     ? bcrypt.hashSync(password, 10)
                     : password;
             await userService.updateUser({
-                zprn: Number(req.params.ID),
-                firstName: firstName,
-                lastName: lastName,
+                zprn: Number(req.params.userID),
+                firstName: req.body.firstName,
+                lastName: req.body.lastName,
                 password: hashedPassword,
-                department: department,
-                role: role,
+                department: req.body.department,
+                role: req.body.role,
             });
             res.status(200).json({
                 code: "OK",
@@ -226,8 +224,13 @@ router.post("/update/details/:ID", async (req, res) => {
 });
 
 router.delete("/:userID", async (req, res) => {
+    let role = null;
     try {
-        jwtService.verify(req.headers["authorization"]);
+        role = jwtService.verify(req.headers["authorization"]).role;
+        if (role !== "moderator") {
+            res.status(403).send(new Error("FORBIDDEN", "Access denied"));
+            return;
+        }
     } catch (error) {
         res.status(403).send(new Error("FORBIDDEN", error.message));
         return;

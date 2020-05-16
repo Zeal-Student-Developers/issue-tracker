@@ -26,8 +26,12 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    disabled: {
+    isDisabled: {
         type: Boolean,
+    },
+    refreshToken: {
+        type: String,
+        unique: true,
     },
 });
 

@@ -2,33 +2,103 @@ const router = require("express").Router();
 const bcrypt = require("bcryptjs");
 const Error = require("../models/Error");
 const Joi = require("@hapi/joi");
-const jwtService = require("../services/JwtService");
 const userService = require("../services/UserService");
 
-/*
- * GET USER INFO
- * [Only loggedIn user can see their info. The userID of loggedIn user is stored in the JWT token itself]
- */
-router.get(
-  "/",
-  userService.allowIfLoggedIn,
-  userService.hasAccessTo("readOwn", "profile"),
-  async (req, res) => {
-    userID = req.user.zprn;
-    try {
-      const user = await userService.getUser(userID);
-      if (user == null) {
-        res.status(401).json(new Error("BAD_REQUEST", "No user found!"));
-      } else {
+router
+  .route("/")
+  /*
+   * GET USER INFO
+   * [Only loggedIn user can see their info. The userID of loggedIn user is stored in the JWT token itself]
+   */
+  .get(
+    userService.allowIfLoggedIn,
+    userService.hasAccessTo("readOwn", "profile"),
+    async (req, res) => {
+      const userID = req.user.zprn;
+      try {
+        const user = await userService.getUser(userID);
+        if (user == null) {
+          res.status(401).send(new Error("BAD_REQUEST", "No user found."));
+        } else {
+          res.status(200).json({
+            code: "OK",
+            result: "SUCCESS",
+            user: {
+              zprn: user.zprn,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              department: user.department,
+            },
+          });
+        }
+      } catch (error) {
+        res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
+      }
+    }
+  )
+  /*
+   * DELETE CURRENT USER
+   */
+  .delete(
+    userService.allowIfLoggedIn,
+    userService.hasAccessTo("deleteOwn", "profile"),
+    async (req, res) => {
+      const userID = req.user.zprn;
+      try {
+        const user = await userService.deleteUser(userID);
+        if (user == null)
+          return res
+            .status(401)
+            .send(new Error("BAD_REQUEST", "No user found."));
         res.status(200).json({
           code: "OK",
           result: "SUCCESS",
-          user: {
-            zprn: user.zprn,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            department: user.department,
-          },
+          msg: "User deleted.",
+        });
+      } catch (error) {
+        res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
+      }
+    }
+  );
+
+/**
+ * ADD NEW USER
+ * Todo : Check for specific type of roles or else reject the request
+ */
+router.post(
+  "/add",
+  userService.allowIfLoggedIn,
+  userService.hasAccessTo("createAny", "profile"),
+  async (req, res) => {
+    let { zprn, firstName, lastName, password, department, role } = req.body;
+    try {
+      const { error } = validateData(
+        zprn,
+        firstName,
+        lastName,
+        password,
+        department,
+        role
+      );
+      if (error != undefined) {
+        res
+          .status(401)
+          .send(new Error("BAD_REQUEST", error.details[0].message));
+      } else {
+        const salt = bcrypt.genSaltSync(10);
+        const hashedPassword = bcrypt.hashSync(password, salt);
+        await userService.addUser(
+          zprn,
+          firstName,
+          lastName,
+          hashedPassword,
+          department,
+          role
+        );
+        res.status(201).json({
+          code: "CREATED",
+          msg: "User added!",
+          result: "SUCCESS",
         });
       }
     } catch (error) {
@@ -36,45 +106,6 @@ router.get(
     }
   }
 );
-
-/**
- * ADD NEW USER
- * Todo : Check for specific type of roles or else reject the request
- */
-router.post("/add", async (req, res) => {
-  let { zprn, firstName, lastName, password, department, role } = req.body;
-  try {
-    const { error } = validateData(
-      zprn,
-      firstName,
-      lastName,
-      password,
-      department,
-      role
-    );
-    if (error != undefined) {
-      res.status(401).send(new Error("BAD_REQUEST", error.details[0].message));
-    } else {
-      const salt = bcrypt.genSaltSync(10);
-      const hashedPassword = bcrypt.hashSync(password, salt);
-      await userService.addUser(
-        zprn,
-        firstName,
-        lastName,
-        hashedPassword,
-        department,
-        role
-      );
-      res.status(201).json({
-        code: "CREATED",
-        msg: "User added!",
-        result: "SUCCESS",
-      });
-    }
-  } catch (error) {
-    res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
-  }
-});
 
 /**
  * USER: UPDATE PASSWORD
@@ -110,31 +141,20 @@ router.patch(
             );
           return;
         }
-        try {
-          const user = await userService.getUser(userID);
-          if (user == null) {
-            res.status(401).send(new Error("BAD_REQUEST", "No user found."));
-          } else {
-            const match = bcrypt.compareSync(oldPassword, user.password);
-            if (match) {
-              const hashedPassword = bcrypt.hashSync(newPassword, 10);
-              await userService.updateUser({
-                zprn: userID,
-                password: hashedPassword,
-              });
-              res.status(200).json({
-                code: "OK",
-                result: "SUCCESS",
-                msg: "Password updated!",
-              });
-            } else {
-              res
-                .status(401)
-                .send(new Error("BAD_REQUEST", "Incorrect Password"));
-            }
-          }
-        } catch (err) {
-          res.status(401).send(new Error("BAD_REQUEST", err.message));
+        const match = bcrypt.compareSync(oldPassword, req.user.password);
+        if (match) {
+          const hashedPassword = bcrypt.hashSync(newPassword, 10);
+          await userService.updateUser({
+            zprn: userID,
+            password: hashedPassword,
+          });
+          res.status(200).json({
+            code: "OK",
+            result: "SUCCESS",
+            msg: "Password updated!",
+          });
+        } else {
+          res.status(401).send(new Error("BAD_REQUEST", "Incorrect Password"));
         }
       }
     } catch (error) {
@@ -175,6 +195,57 @@ router.post(
     }
   }
 );
+
+/*
+ * AUTHORITY: GET ALL USERS
+ */
+router.get(
+  "/all",
+  userService.allowIfLoggedIn,
+  userService.hasAccessTo("readAny", "profile"),
+  async (req, res) => {
+    try {
+      const users = await userService.getAllUsers();
+      res.status(200).json({
+        code: "OK",
+        result: "SUCCESS",
+        users: users,
+      });
+    } catch (error) {
+      res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
+    }
+  }
+);
+
+/*
+ * AUTHORITY: GET USER BY USERID
+ */
+router.get(
+  "/:userID",
+  userService.allowIfLoggedIn,
+  userService.hasAccessTo("readAny", "profile"),
+  async (req, res) => {
+    try {
+      const user = await userService.getUser(Number(req.params.userID));
+      if (user == null)
+        return res.status(401).send(new Error("BAD_REQUEST", "No user found."));
+      res.status(200).json({
+        code: "OK",
+        result: "SUCCESS",
+        user: {
+          zprn: user.zprn,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          department: user.department,
+          role: user.role,
+        },
+      });
+    } catch (error) {
+      res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
+    }
+  }
+);
+
 /*
  * AUTHORITY: UPDATE USER DETAILS [ALL]
  */
@@ -223,6 +294,8 @@ router.delete(
   async (req, res) => {
     try {
       const user = await userService.deleteUser(Number(req.params.userID));
+      if (user == null)
+        return res.status(401).send(new Error("BAD_REQUEST", "No user found."));
       res.status(200).json({
         code: "OK",
         result: "SUCCESS",
@@ -244,7 +317,7 @@ function validateData(zprn, firstName, lastName, password, department, role) {
     firstName: Joi.string().required(),
     lastName: Joi.string().required(),
     password: Joi.string().required().min(6),
-    department: Joi.string().required().min(3),
+    department: Joi.string().required().min(2),
     role: Joi.string().required(),
   });
 

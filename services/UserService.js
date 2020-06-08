@@ -100,7 +100,7 @@ class UserService {
     return new Promise(async (resolve, reject) => {
       try {
         const user = await User.findOneAndUpdate(
-          { zprn: zprn },
+          { zprn: zprn, isDisabled: false },
           { isDisabled: true },
           { new: true }
         );

@@ -3,3 +3,5 @@
 package-lock.json
 .env
 scratchpad*
+/.nyc_output
+/coverage

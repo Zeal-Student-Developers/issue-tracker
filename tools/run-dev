@@ -3,9 +3,9 @@ CUR=$(dirname $(readlink -f $0))
 
 case "$1" in
     "-d")
-        docker-compose -f $CUR/../docker-compose.yml up -d
+        docker-compose -f $CUR/../docker-compose.yml up dev -d
         ;;
     *)
-        docker-compose -f $CUR/../docker-compose.yml up
+        docker-compose -f $CUR/../docker-compose.yml up dev
         ;;
 esac

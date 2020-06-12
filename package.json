@@ -4,19 +4,25 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon index.js"
+    "test": "mocha ./test/unit/**/*.test.js",
+    "test integration": "mocha ./test/integration/**/*.test.js",
+    "coverage": "nyc --reporter=html --reporter=text --all mocha ./test/**/*.test.js",
+    "dev": "nodemon --legacy-watch index.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",
     "nodemon": "^2.0.3",
-    "mongoose": "5.9.10",
-    "bcryptjs": "2.4.3",
-    "jsonwebtoken": "8.5.1",
-    "@hapi/joi": "17.1.1",
-    "dotenv": "8.2.0",
-    "accesscontrol": "2.2.1"
+    "mongoose": "^5.9.10",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^8.5.1",
+    "@hapi/joi": "^17.1.1",
+    "dotenv": "^8.2.0",
+    "accesscontrol": "^2.2.1",
+    "mocha": "^8.0.1",
+    "nyc": "^15.1.0",
+    "chai": "^4.2.0",
+    "sinon": "^9.0.2"
   }
 }

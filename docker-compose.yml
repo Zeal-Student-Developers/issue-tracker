@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 services:
   dev:
     image: node:12.16.3-alpine3.9
@@ -9,13 +9,54 @@ services:
     command: npm run dev
     ports:
       - 3000:3000
+    depends_on:
+      - database
     env_file: .env
+
+  unit:
+    image: node:12.16.3-alpine3.9
+    volumes:
+      - nodemodules:/usr/src/service/node_modules
+      - .:/usr/src/service
+    working_dir: /usr/src/service
+    command: npm run test
+    ports:
+      - 3000:3000
+    env_file: .env
+
+  coverage:
+    image: node:12.16.3-alpine3.9
+    volumes:
+      - nodemodules:/usr/src/service/node_modules
+      - .:/usr/src/service
+    working_dir: /usr/src/service
+    command: npm run coverage
+    depends_on:
+      - database
+    ports:
+      - 3000:3000
+    env_file: .env
+
+  integration:
+    image: node:12.16.3-alpine3.9
+    volumes:
+      - nodemodules:/usr/src/service/node_modules
+      - .:/usr/src/service
+    working_dir: /usr/src/service
+    command: npm run test integration
+    depends_on:
+      - database
+    ports:
+      - 3000:3000
+    env_file: .env
+
   database:
     image: dannyben/alpine-mongo:latest
     ports:
       - 27017:27017
     volumes:
       - mongodatabase:/data/db
+
 volumes:
   nodemodules:
     external: true

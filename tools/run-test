@@ -1,0 +1,23 @@
+#!/bin/bash
+CUR=$(dirname $(readlink -f $0))
+
+case "$1" in
+    "unit")
+        docker-compose -f $CUR/../docker-compose.yml run unit
+        ;;
+    "integration")
+        docker-compose -f $CUR/../docker-compose.yml run integration
+        ;;
+    "coverage")
+        docker-compose -f $CUR/../docker-compose.yml run coverage
+        ;;
+    *)
+        echo "Illegal Arguments
+        Usage: run-test [OPTION]
+        
+        Options:
+        unit            Run unit tests
+        integration     Run integration tests
+        coverage        Generate the code coverage reports"
+        ;;
+esac

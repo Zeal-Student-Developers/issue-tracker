@@ -1,9 +1,9 @@
 class Error {
-    constructor(statusCode, msg) {
-        this.code = statusCode;
-        this.result = "FAILURE";
-        this.msg = msg;
-    }
+  constructor(statusCode, message) {
+    this.code = statusCode;
+    this.result = "FAILURE";
+    this.message = message;
+  }
 }
 
 module.exports = Error;

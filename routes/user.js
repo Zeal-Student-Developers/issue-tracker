@@ -156,7 +156,7 @@ router.post(
         res.status(200).json({
           code: "OK",
           result: "SUCCESS",
-          msg: "User updated!",
+          message: "User updated!",
         });
       }
     } catch (error) {
@@ -252,7 +252,7 @@ router.post(
         res.status(200).json({
           code: "OK",
           result: "SUCCESS",
-          msg: "User updated!",
+          message: "User updated!",
         });
       }
     } catch (error) {

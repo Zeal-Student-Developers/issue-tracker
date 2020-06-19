@@ -8,19 +8,19 @@ class UserService {
 
   // ADD USER
   async addUser(zprn, firstName, lastName, password, department, role) {
-    const user = new User({
-      zprn: Number(zprn),
-      role: role,
-      firstName: firstName,
-      lastName: lastName,
-      department: department,
-      password: password,
-      role: role,
-      isDisabled: false,
-      refreshToken: randomBytes(45).toString("hex") + "." + zprn,
-    });
     return new Promise(async (resolve, reject) => {
       try {
+        const user = new User({
+          zprn: Number(zprn),
+          role: role,
+          firstName: firstName,
+          lastName: lastName,
+          department: department,
+          password: password,
+          role: role,
+          isDisabled: false,
+          refreshToken: randomBytes(45).toString("hex") + "." + zprn,
+        });
         const newUser = await user.save();
         return resolve(newUser);
       } catch (error) {
@@ -79,7 +79,6 @@ class UserService {
           return resolve(result);
         }
       } catch (error) {
-        console.log(error);
         return reject(error);
       }
     });
@@ -88,8 +87,13 @@ class UserService {
   async deleteAllUsers() {
     return new Promise(async (resolve, reject) => {
       try {
-        const result = await User.deleteMany({});
-        return resolve(result.deletedCount);
+        const result = await User.updateMany(
+          {},
+          {
+            isDisabled: true,
+          }
+        );
+        return resolve(result.nModified);
       } catch (error) {
         return reject(error);
       }

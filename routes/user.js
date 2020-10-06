@@ -63,7 +63,6 @@ router
 
 /**
  * ADD NEW USER
- * Todo : Check for specific type of roles or else reject the request
  */
 router.post(
   "/add",
@@ -109,7 +108,6 @@ router.post(
 
 /**
  * USER: UPDATE PASSWORD
- * Todo : Check for valid password and password same after validating that
  *        the user actually exists. OR Maybe we do not need to validate if the
  *        if the user actually exists because are previous middleware actually
  *        checks for the loggedInUser and even passes the loggedInUser into

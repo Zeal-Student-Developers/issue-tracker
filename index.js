@@ -6,7 +6,6 @@ const UserService = require("./services/UserService");
 const Error = require("./models/Error");
 require("dotenv").config;
 
-app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 mongoose

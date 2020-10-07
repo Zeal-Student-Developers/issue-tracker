@@ -76,15 +76,6 @@ router.post("/add", async (req, res) => {
   }
 });
 
-/**
- * USER: UPDATE PASSWORD
- * Todo : Check for valid password and password same after validating that
- *        the user actually exists. OR Maybe we do not need to validate if the
- *        if the user actually exists because are previous middleware actually
- *        checks for the loggedInUser and even passes the loggedInUser into
- *        the `req.user` var which by transitivity means the user actually exists
- *        and we just need to update the password without checking for it.
- */
 router.patch(
   "/update/password",
   userService.allowIfLoggedIn,
@@ -112,26 +103,22 @@ router.patch(
         }
         try {
           const user = await userService.getUser(userID);
-          if (user == null) {
-            res.status(401).send(new Error("BAD_REQUEST", "No user found."));
+          const match = bcrypt.compareSync(oldPassword, user.password);
+          if (match) {
+            const hashedPassword = bcrypt.hashSync(newPassword, 10);
+            await userService.updateUser({
+              zprn: userID,
+              password: hashedPassword,
+            });
+            res.status(200).json({
+              code: "OK",
+              result: "SUCCESS",
+              msg: "Password updated!",
+            });
           } else {
-            const match = bcrypt.compareSync(oldPassword, user.password);
-            if (match) {
-              const hashedPassword = bcrypt.hashSync(newPassword, 10);
-              await userService.updateUser({
-                zprn: userID,
-                password: hashedPassword,
-              });
-              res.status(200).json({
-                code: "OK",
-                result: "SUCCESS",
-                msg: "Password updated!",
-              });
-            } else {
-              res
-                .status(401)
-                .send(new Error("BAD_REQUEST", "Incorrect Password"));
-            }
+            res
+              .status(401)
+              .send(new Error("BAD_REQUEST", "Incorrect Password"));
           }
         } catch (err) {
           res.status(401).send(new Error("BAD_REQUEST", err.message));

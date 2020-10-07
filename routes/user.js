@@ -2,7 +2,6 @@ const router = require("express").Router();
 const bcrypt = require("bcryptjs");
 const Error = require("../models/Error");
 const Joi = require("@hapi/joi");
-const jwtService = require("../services/JwtService");
 const userService = require("../services/UserService");
 
 /*
@@ -175,6 +174,66 @@ router.post(
     }
   }
 );
+
+/**
+ * USER: DELETE OWN PROFILE.
+ */
+router.delete(
+  "/",
+  userService.allowIfLoggedIn,
+  userService.hasAccessTo("deleteOwn", "profile"),
+  async (req, res) => {
+    try {
+      await userService.deleteUser(req.user.userID);
+      res.status(200).json({
+        code: "OK",
+        result: "SUCCESS",
+        msg: "User deleted.",
+      });
+    } catch (error) {
+      res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
+    }
+  }
+);
+
+/**
+ * AUTHORITY: GET USER BY USEID.
+ */
+router.get(
+  "/:userId",
+  userService.allowIfLoggedIn,
+  userService.hasAccessTo("readAny", "profile"),
+  async (req, res) => {
+    try {
+      const user = await userService.getUser(Number(req.params.userId));
+      if (user == null) {
+        res.status(401).send(new Error("BAD_REQUEST", "No user found."));
+      } else {
+        res.status(200).json({ code: "OK", result: "SUCCESS", user: user });
+      }
+    } catch (error) {
+      res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
+    }
+  }
+);
+
+/**
+ * AUTHORITY:GET ALL USERS.
+ */
+router.get(
+  "/all",
+  userService.allowIfLoggedIn,
+  userService.hasAccessTo("readAny", "profile"),
+  async (req, res) => {
+    try {
+      const users = await userService.getAllUsers();
+      res.status(200).json({ code: "OK", result: "SUCCESS", users: users });
+    } catch (error) {
+      res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
+    }
+  }
+);
+
 /*
  * AUTHORITY: UPDATE USER DETAILS [ALL]
  */
@@ -193,7 +252,7 @@ router.post(
         const hashedPassword =
           password != undefined ? bcrypt.hashSync(password, 10) : password;
         await userService.updateUser({
-          zprn: Number(req.body.zprn),
+          zprn: Number(req.params.userID),
           firstName: req.body.firstName,
           lastName: req.body.lastName,
           password: hashedPassword,

@@ -223,11 +223,15 @@ router.delete(
   async (req, res) => {
     try {
       const user = await userService.deleteUser(Number(req.params.userID));
-      res.status(200).json({
-        code: "OK",
-        result: "SUCCESS",
-        deleted: user,
-      });
+      if (user == null) {
+        res.status(401).send(new Error("BAD_REQUEST", "No user found."));
+      } else {
+        res.status(200).json({
+          code: "OK",
+          result: "SUCCESS",
+          deleted: user,
+        });
+      }
     } catch (error) {
       res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
     }

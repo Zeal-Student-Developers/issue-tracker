@@ -67,7 +67,7 @@ class UserService {
       try {
         const user = await User.findOne({ zprn: zprn });
         if (user == null) {
-          return reject(new Error("No user found"));
+          return reject(new Error("BAD_REQUEST", "No user found"));
         } else {
           user.firstName = firstName != undefined ? firstName : user.firstName;
           user.lastName = lastName != undefined ? lastName : user.lastName;

@@ -37,44 +37,47 @@ router.get(
   }
 );
 
-/**
- * ADD NEW USER
- * Todo : Check for specific type of roles or else reject the request
- */
-router.post("/add", async (req, res) => {
-  let { zprn, firstName, lastName, password, department, role } = req.body;
-  try {
-    const { error } = validateData(
-      zprn,
-      firstName,
-      lastName,
-      password,
-      department,
-      role
-    );
-    if (error != undefined) {
-      res.status(401).send(new Error("BAD_REQUEST", error.details[0].message));
-    } else {
-      const salt = bcrypt.genSaltSync(10);
-      const hashedPassword = bcrypt.hashSync(password, salt);
-      await userService.addUser(
+router.post(
+  "/add",
+  userService.allowIfLoggedIn,
+  userService.hasAccessTo("createAny", "profile"),
+  async (req, res) => {
+    let { zprn, firstName, lastName, password, department, role } = req.body;
+    try {
+      const { error } = validateData(
         zprn,
         firstName,
         lastName,
-        hashedPassword,
+        password,
         department,
         role
       );
-      res.status(201).json({
-        code: "CREATED",
-        msg: "User added!",
-        result: "SUCCESS",
-      });
+      if (error != undefined) {
+        res
+          .status(401)
+          .send(new Error("BAD_REQUEST", error.details[0].message));
+      } else {
+        const salt = bcrypt.genSaltSync(10);
+        const hashedPassword = bcrypt.hashSync(password, salt);
+        await userService.addUser(
+          zprn,
+          firstName,
+          lastName,
+          hashedPassword,
+          department,
+          role
+        );
+        res.status(201).json({
+          code: "CREATED",
+          msg: "User added!",
+          result: "SUCCESS",
+        });
+      }
+    } catch (error) {
+      res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
     }
-  } catch (error) {
-    res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
   }
-});
+);
 
 /**
  * USER: UPDATE PASSWORD

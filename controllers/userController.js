@@ -150,7 +150,17 @@ const getUserByUserId = async (req, res) => {
     if (user == null) {
       res.status(401).send(new Error("BAD_REQUEST", "No user found."));
     } else {
-      res.status(200).json({ code: "OK", result: "SUCCESS", user: user });
+      res.status(200).json({
+        code: "OK",
+        result: "SUCCESS",
+        user: {
+          zprn: user.zprn,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          department: user.department,
+          role: user.role,
+        },
+      });
     }
   } catch (error) {
     res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
@@ -160,7 +170,14 @@ const getUserByUserId = async (req, res) => {
 const getAllUsers = async (req, res) => {
   try {
     const users = await userService.getAllUsers();
-    res.status(200).json({ code: "OK", result: "SUCCESS", users: users });
+    const usersList = users.map((user) => ({
+      zprn: user.zprn,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      department: user.department,
+      role: user.role,
+    }));
+    res.status(200).json({ code: "OK", result: "SUCCESS", users: usersList });
   } catch (error) {
     res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
   }

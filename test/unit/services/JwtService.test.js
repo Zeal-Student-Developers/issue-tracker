@@ -48,7 +48,9 @@ describe("JwtService", () => {
 
       expect(stub.called).to.be.false;
       expect(token).to.be.undefined;
-      expect(error.message).to.eql("Invalid token!");
+      expect(error.message).to.eql(
+        "Payload must be a valid object with one or more properties."
+      );
     });
   });
 
@@ -65,7 +67,9 @@ describe("JwtService", () => {
     it("returns an object if jwt.verify verifies and returns.", () => {
       stub.returns({});
 
-      const token = JwtService.verify("Bearer xyz");
+      const token = JwtService.verify(
+        "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.Et9HFtf9R3GEMA0IICOfFMVXY7kkTX1wr4qCyhIf58U"
+      );
 
       expect(stub.calledOnce).to.be.true;
       expect(token).to.be.deep.equal({});
@@ -75,7 +79,9 @@ describe("JwtService", () => {
       stub.throws();
       let payload;
       try {
-        payload = JwtService.verify("Bearer xyz");
+        payload = JwtService.verify(
+          "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.Et9HFtf9R3GEMA0IICOfFMVXY7kkTX1wr4qCyhIf58U"
+        );
       } catch (e) {}
 
       expect(stub.calledOnce).to.be.true;
@@ -94,7 +100,9 @@ describe("JwtService", () => {
 
       expect(stub.called).to.be.false;
       expect(payload).to.be.undefined;
-      expect(error.message).to.eql("Invalid token!");
+      expect(error.message).to.eql(
+        "Authorization header must contain a valid JWT token."
+      );
     });
   });
 
@@ -111,7 +119,9 @@ describe("JwtService", () => {
     it("returns an object if jwt.decode decodes and returns.", () => {
       stub.returns({});
 
-      const token = JwtService.decode("Bearer xyz");
+      const token = JwtService.decode(
+        "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.Et9HFtf9R3GEMA0IICOfFMVXY7kkTX1wr4qCyhIf58Us"
+      );
 
       expect(stub.calledOnce).to.be.true;
       expect(token).to.be.deep.equal({});
@@ -121,7 +131,9 @@ describe("JwtService", () => {
       stub.throws();
       let payload;
       try {
-        payload = JwtService.decode("Bearer xyz");
+        payload = JwtService.decode(
+          "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.Et9HFtf9R3GEMA0IICOfFMVXY7kkTX1wr4qCyhIf58U"
+        );
       } catch (e) {}
 
       expect(stub.calledOnce).to.be.true;
@@ -140,7 +152,9 @@ describe("JwtService", () => {
 
       expect(stub.called).to.be.false;
       expect(payload).to.be.undefined;
-      expect(error.message).to.eql("Invalid token!");
+      expect(error.message).to.eql(
+        "Authorization header must contain a valid JWT token."
+      );
     });
   });
 });

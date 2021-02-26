@@ -37,7 +37,7 @@ class JwtService {
     if (
       authHeader === null ||
       authHeader === undefined ||
-      !RegExp("^(Bearer )[\\w\\.]{84,}$").test(authHeader)
+      !/^(Bearer )[\w\-\.]{84,}$/.test(authHeader)
     ) {
       throw new Error("Authorization header must contain a valid JWT token.");
     } else {

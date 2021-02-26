@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const JwtService = require("./services/JwtService");
 const UserService = require("./services/UserService");
 const Error = require("./models/Error");
-require("dotenv").config;
+require("dotenv").config();
 
 app.use(express.json());
 
@@ -39,6 +39,7 @@ app.use(async (req, res, next) => {
 
 app.use("/api/auth/", require("./routes/auth"));
 app.use("/api/users/", require("./routes/user"));
+app.use("/api/issues/", require("./routes/issue"));
 
 app.listen(port, () => {
   console.log(`Listening on port ${port}`);

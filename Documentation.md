@@ -87,7 +87,7 @@ _All the requests must send the data in_ `application/JSON` _format only_.
 
 ```JSON
 {
-  "zprn": [zprn]
+  "zprn": [zprn],
   "password": [password],
 }
 ```
@@ -133,7 +133,7 @@ statusCode: 200
 {
   "code": "OK",
   "result": "SUCCESS",
-  "token": [enerated JWT token>
+  "token": [generated JWT token]
 }
 ```
 
@@ -229,7 +229,7 @@ statusCode: 200
   "code": "OK",
   "result": "SUCCESS",
   "user": {
-    "zprn": [he user's zprn],
+    "zprn": [user's zprn],
     "firstName": [user's first name],
     "lastName": [user's last name],
     "department": [user's department],
@@ -258,7 +258,7 @@ statusCode: 200
   "code": "OK",
   "result": "SUCCESS",
   "user": {
-    "zprn": [the user's zprn],
+    "zprn": [user's zprn],
     "firstName": [user's first name],
     "lastName": [user's last name],
     "department": [user's department],
@@ -315,9 +315,9 @@ statusCode: 200
 **Required parameters**:
 ```JSON
 {
-  "firstName":[pdated firstName],
-  "lastName":[pdated lastName],
-  "department":[pdated department],
+  "firstName":[updated firstName],
+  "lastName":[updated lastName],
+  "department":[updated department],
 }
 ```
 >**Note**: The currently logged in user can only update their firstName, lastName & department. Only those fields must be passed that are updated, rest must be left undefined.
@@ -430,10 +430,10 @@ _Successful Response format_:
 **Required parameters**:
 ```JSON
 {
-  "name": [itle of the issue],
-  "description": [escription of the issue],
-  "section": [ection to which the issue belongs],
-  "scope": [cope of the issue, [intitute/department]],
+  "title": [title of the issue],
+  "description": [description of the issue],
+  "section": [section to which the issue belongs],
+  "scope": [scope of the issue, [INTITUTE/DEPARTMENT]],
 }
 ```
 - `name` should be in `String` format.
@@ -460,7 +460,8 @@ statusCode : 200
 #### Getting All Issues
 
 #### Get all issues
-]Returns a list of all resolved & unresolved issues
+
+> Returns a list of all resolved & unresolved issues
 
 **Method**: **`GET`**
 <br>
@@ -540,7 +541,7 @@ statusCode : 200
 {
   "code": "OK",
   "result": "SUCCESS",
-  "issue": [ssue]
+  "issue": [issue]
 }
 ```
 **[⬆Back to index](#index)**

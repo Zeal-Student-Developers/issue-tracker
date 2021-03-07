@@ -389,17 +389,17 @@ const deleteIssue = async (req, res) => {
 const validateData = (title, description, section, scope) => {
   const schema = Joi.object({
     title: Joi.string()
-      .required()
       .regex(/\w+/)
-      .rule({ message: "Please provide a valid title" }),
+      .rule({ message: "Please provide a valid title" })
+      .required(),
     description: Joi.string()
-      .required()
       .regex(/\w+/)
-      .rule({ message: "Please provide a valid description" }),
+      .rule({ message: "Please provide a valid description" })
+      .required(),
     section: Joi.string()
       .regex(/\w+/)
-      .required()
-      .rule({ message: "Please provide a valid section" }),
+      .rule({ message: "Please provide a valid section" })
+      .required(),
     scope: Joi.string()
       .regex(/^INSTITUTE|DEPARTMENT$/)
       .rule({ message: "Scope must be either 'INSTITUTE' or 'DEPARTMENT'" })

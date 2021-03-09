@@ -42,7 +42,7 @@ class UserService {
   }
 
   // FIND USER WITH ZPRN
-  async getUser(zprn) {
+  async getUserByZprn(zprn) {
     return new Promise(async (resolve, reject) => {
       try {
         const user = await User.findOne({
@@ -56,6 +56,15 @@ class UserService {
     });
   }
 
+  /**
+   * Get user with ID
+   * @param {String} id ID of the user
+   * @returns User with specified ID
+   */
+  async getUserById(id) {
+    return await User.findById(id);
+  }
+
   // UPDATE USER
   /*
    * 'newUser' is the object containing updated details of the user.
@@ -63,9 +72,9 @@ class UserService {
    */
   async updateUser(newUser) {
     return new Promise(async (resolve, reject) => {
-      const { zprn, firstName, lastName, password, department, role } = newUser;
+      const { id, firstName, lastName, password, department, role } = newUser;
       try {
-        const user = await User.findOne({ zprn: zprn });
+        const user = await User.findById(id);
         if (user == null) {
           return reject(new Error("BAD_REQUEST", "No user found"));
         } else {
@@ -100,11 +109,11 @@ class UserService {
     });
   }
 
-  async deleteUser(zprn) {
+  async deleteUser(id) {
     return new Promise(async (resolve, reject) => {
       try {
         const user = await User.findOneAndUpdate(
-          { zprn: zprn },
+          { _id: id },
           { isDisabled: true },
           { new: true }
         );

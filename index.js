@@ -27,7 +27,7 @@ app.use(async (req, res, next) => {
     const accessToken = req.headers["authorization"];
     try {
       const { userID } = JwtService.verify(accessToken);
-      res.locals.loggedInUser = await UserService.getUser(userID);
+      res.locals.loggedInUser = await UserService.getUserById(userID);
       next();
     } catch (error) {
       return res.status(401).json(new Error("BAD_REQUEST", error.message));

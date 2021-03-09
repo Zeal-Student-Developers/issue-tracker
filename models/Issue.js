@@ -43,7 +43,7 @@ const IssueSchema = new Schema({
     type: Number,
   },
   upvoters: {
-    type: [Number],
+    type: [Schema.Types.ObjectId],
   },
   comments: {
     type: [
@@ -61,7 +61,7 @@ const IssueSchema = new Schema({
           required: true,
         },
         postedBy: {
-          type: Number,
+          type: Schema.Types.ObjectId,
           required: true,
         },
         postedOn: {
@@ -72,7 +72,7 @@ const IssueSchema = new Schema({
     ],
   },
   createdBy: {
-    type: Number,
+    type: Schema.Types.ObjectId,
     required: true,
   },
   createdOn: {

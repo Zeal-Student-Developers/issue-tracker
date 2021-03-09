@@ -12,7 +12,7 @@ const loginController = async (req, res) => {
     if (error !== undefined) {
       res.status(401).send(new Error("BAD_REQUEST", error.details[0].message));
     } else {
-      const user = await userService.getUser(Number(zprn));
+      const user = await userService.getUserByZprn(Number(zprn));
       if (user == null) {
         res.status(401).send(new Error("BAD_REQUEST", "No user found"));
       } else {
@@ -21,7 +21,7 @@ const loginController = async (req, res) => {
           let token = null;
           try {
             token = jwtService.sign({
-              userID: user.zprn,
+              userID: user.id,
               department: user.department,
               role: user.role,
             });
@@ -54,8 +54,8 @@ const refreshTokenController = async (req, res) => {
     return;
   }
   try {
-    const user = await userService.getUser(userID);
-    if (user == null) {
+    const user = await userService.getUserById(userID);
+    if (user === null) {
       res.send(401).send(new Error("BAD_REQUEST", "No user found"));
       return;
     } else {

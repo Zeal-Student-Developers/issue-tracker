@@ -118,7 +118,7 @@ const getIssueById = async (req, res) => {
  */
 const addIssue = async (req, res) => {
   const { title, description, section, scope } = req.body;
-  const { department, zprn } = req.user;
+  const { department, id } = req.user;
   try {
     const { error } = validateData(title, description, section, scope);
     if (error) {
@@ -132,7 +132,7 @@ const addIssue = async (req, res) => {
         section,
         department,
         scope,
-        zprn
+        id
       );
       res.status(200).json({
         code: "OK",
@@ -153,19 +153,19 @@ const addIssue = async (req, res) => {
  */
 const updateIssue = async (req, res) => {
   const { id } = req.params;
-  const { zprn } = req.user;
+  const { id: userId } = req.user;
   const { title, description } = req.body;
   try {
     const issue = await issueService.getIssueById(id);
     if (issue) {
-      if (issue.createdBy !== zprn) {
+      if (issue.createdBy.toString() !== userId) {
         return res
           .status(403)
           .send(new Error("FORBIDDEN", "Action not allowed"));
       }
       issue.title = title;
       issue.description = description;
-      res.isEdited = true;
+      issue.isEdited = true;
       await issue.save();
       res.status(200).json({
         code: "OK",
@@ -187,11 +187,11 @@ const updateIssue = async (req, res) => {
  */
 const toggleResolveStatus = async (req, res) => {
   let issue = null;
-  const { zprn, role } = req.user;
+  const { id, role } = req.user;
   try {
     issue = await issueService.getIssueById(req.params.id);
     if (issue) {
-      if (issue.createdBy === zprn || role === "student_moderator") {
+      if (issue.createdBy.toString() === id || role === "student_moderator") {
         issue.isResolved = !issue.isResolved;
         await issue.save();
         res.status(200).json({
@@ -218,7 +218,7 @@ const toggleResolveStatus = async (req, res) => {
 const toggleUpvote = async (req, res) => {
   let issue = null;
   const { id } = req.params;
-  const { department, zprn } = req.user;
+  const { department, id: userId } = req.user;
   try {
     issue = await issueService.getIssueById(id);
     if (issue) {
@@ -228,13 +228,15 @@ const toggleUpvote = async (req, res) => {
           .send(new Error("FORBIDDEN", "Action not allowed"));
 
       let userAlreadyUpvoted = false;
-      if (issue.upvoters.findIndex((id) => id === zprn)) {
+      if (issue.upvoters.findIndex((id) => id.toString() === userId)) {
         issue.upvotes++;
-        issue.upvoters.push(zprn);
+        issue.upvoters.push(userId);
       } else {
         userAlreadyUpvoted = true;
         issue.upvotes--;
-        issue.upvoters = issue.upvoters.filter((id) => id !== zprn);
+        issue.upvoters = issue.upvoters.filter(
+          (id) => id.toString() !== userId
+        );
       }
       await issue.save();
       res.status(200).json({
@@ -288,7 +290,7 @@ const toggleInappropriate = async (req, res) => {
 const postComment = async (req, res) => {
   let issue = null;
   const { comment } = req.body;
-  const { zprn, department } = req.user;
+  const { id, department } = req.user;
   try {
     issue = await issueService.getIssueById(req.params.id);
     if (issue) {
@@ -297,7 +299,7 @@ const postComment = async (req, res) => {
       if (department !== issue.department && issue.scope !== "INSTITUTE")
         res.status(403).send(new Error("FORBIDDEN", "Action not allowed"));
       else {
-        issue.comments.push({ comment, postedBy: zprn });
+        issue.comments.push({ comment, postedBy: id });
         await issue.save();
         res.status(200).json({
           code: "OK",
@@ -321,7 +323,7 @@ const postComment = async (req, res) => {
 const postSolution = async (req, res) => {
   let issue = null;
   const { solution } = req.body;
-  const { zprn, role, department } = req.user;
+  const { id, role, department } = req.user;
   try {
     issue = await issueService.getIssueById(req.params.id);
     if (issue) {
@@ -331,7 +333,7 @@ const postSolution = async (req, res) => {
       )
         res.status(403).send(new Error("FORBIDDEN", "Action not allowed"));
       else {
-        issue.solution.push({ solution, postedBy: zprn });
+        issue.solution.push({ solution, postedBy: id });
         await issue.save();
         res.status(200).json({
           code: "OK",
@@ -354,11 +356,11 @@ const postSolution = async (req, res) => {
  */
 const deleteIssue = async (req, res) => {
   let issue = null;
-  const { role, zprn } = req.user;
+  const { role, id } = req.user;
   try {
     issue = await issueService.getIssueById(req.params.id);
     if (issue) {
-      if (issue.createdBy === zprn || role === "student_moderator") {
+      if (issue.createdBy.toString() === id || role === "student_moderator") {
         issue.isDeleted = true;
         await issue.save();
         res.status(200).json({
@@ -398,8 +400,8 @@ const validateData = (title, description, section, scope) => {
       .rule({ message: "Please provide a valid description" }),
     section: Joi.string()
       .regex(/\w+/)
-      .required()
-      .rule({ message: "Please provide a valid section" }),
+      .rule({ message: "Please provide a valid section" })
+      .required(),
     scope: Joi.string()
       .regex(/^INSTITUTE|DEPARTMENT$/)
       .rule({ message: "Scope must be either 'INSTITUTE' or 'DEPARTMENT'" })

@@ -41,7 +41,7 @@ describe("UserService", () => {
     });
   });
 
-  describe("getUser()", () => {
+  describe("getUserByZprn()", () => {
     let userStub;
 
     beforeEach(() => {
@@ -55,7 +55,7 @@ describe("UserService", () => {
     it("resolves if User.findOne resolves with data", async () => {
       userStub.resolves({});
       try {
-        const users = await UserService.getUser(123131);
+        const users = await UserService.getUserByZprn(123131);
         expect(userStub.calledOnce).to.be.true;
         expect(users).to.be.empty;
       } catch (err) {
@@ -66,7 +66,7 @@ describe("UserService", () => {
     it("rejects if User.findOne rejects with an error", async () => {
       userStub.rejects(new Error("Some Error"));
       try {
-        const users = await UserService.getUser(12133);
+        const users = await UserService.getUserByZprn(12133);
         expect(users).to.be.undefined;
         expect.fail("It should fail and reject");
       } catch (err) {

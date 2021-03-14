@@ -31,6 +31,7 @@
       - [Get all issues](#get-all-issues)
       - [Get all resolved issues](#get-all-resolved-issues)
       - [Get all unresolved issues](#get-all-unresolved-issues)
+      - [Get issues by phrase](#get-issues-by-phrase)
       - [Get issue by ID](#get-issue-by-id)
     - [Updating an issue](#updating-an-issue)
       - [Toggle issue resolve status](#toggle-issue-resolve-status)
@@ -366,7 +367,7 @@ statusCode: 200
   "role": [user's role],
 }
 ```
-]*Note:** Fields that are not updated, must not be defined.
+**Note:** Fields that are not updated, must not be defined.
 
 _Successful Response format_:
 ```JSON
@@ -563,6 +564,30 @@ statusCode : 200
 }
 ```
 **[⬆Back to index](#index)**
+
+#### Get issues by phrase:
+**Method**: **`GET`**
+<br>
+**URL**: **`api/issues/phrase`**
+<br>
+**Accessible to**: `All`
+
+**Required parameters**:
+```JSON
+{
+  "phrase":"Phrase containing the keywords"
+}
+```
+
+_Successful Response format_:
+```JSON
+statusCode : 200
+{
+  "code": "OK",
+  "result": "SUCCESS",
+  "issues":"[List of issues containing the provided keywords]",
+}
+```
 
 #### Get issue by ID
 **Method**: **`GET`**

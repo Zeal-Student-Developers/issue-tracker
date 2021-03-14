@@ -5,6 +5,7 @@ const {
   getAllResolvedIssues,
   getAllUnresolvedIssues,
   getIssueById,
+  saveImages: saveImagesController,
   addIssue,
   toggleResolveStatus,
   postComment,
@@ -14,6 +15,9 @@ const {
   deleteIssue,
 } = require("../controllers/IssueController");
 const { allowIfLoggedIn, hasAccessTo } = require("../services/UserService");
+const { saveImages } = require("../services/FileService");
+
+const Image = require("../models/Image");
 
 // Get all issues
 router.get(
@@ -45,6 +49,15 @@ router.get(
   allowIfLoggedIn,
   hasAccessTo("readAny", "issue"),
   getIssueById
+);
+
+// Post images for an issue
+router.post(
+  "/images",
+  allowIfLoggedIn,
+  hasAccessTo("createOwn", "issue"),
+  saveImages,
+  saveImagesController
 );
 
 // Post an issue

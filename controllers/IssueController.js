@@ -1,6 +1,8 @@
 const Joi = require("@hapi/joi");
 const issueService = require("../services/IssueService");
 const Error = require("../models/Error");
+const Image = require("../models/Image");
+const { uploadImages, updateImageIssueId } = require("../services/FileService");
 
 /**
  * Controller to get all the issues
@@ -112,15 +114,54 @@ const getIssueById = async (req, res) => {
 };
 
 /**
+ * Controller to upload images to file server
+ * @param {Request} req Request Object
+ * @param {Response} res Response Object
+ */
+const saveImages = async (req, res) => {
+  const files = req.files;
+  const { id } = req.user;
+  try {
+    const data = await uploadImages(files, id);
+    if (data) {
+      const paths = [];
+      data.files.forEach(async (file) => {
+        const path = `${process.env.FILE_SERVER_URI}/${file.path}`;
+        paths.push(path);
+
+        await Image.create({
+          path,
+          mimetype: file.mimetype,
+          userId: req.user.id,
+          issueId: null,
+          createdOn: file.createdOn,
+        });
+      });
+      return res.status(200).json({
+        code: "OK",
+        result: "SUCCESS",
+        files: paths,
+      });
+    }
+    res
+      .status(500)
+      .send(new Error("INTERNAL_SERVER_ERROR", "Something went wrong"));
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
+  }
+};
+
+/**
  * Controller to add new issue
  * @param {Request} req Request Object
  * @param {Response} res Response Object
  */
 const addIssue = async (req, res) => {
-  const { title, description, section, scope } = req.body;
+  const { title, description, images, section, scope } = req.body;
   const { department, id } = req.user;
   try {
-    const { error } = validateData(title, description, section, scope);
+    const { error } = validateData(title, description, images, section, scope);
     if (error) {
       const errors = {};
       error.details.forEach(({ path, message }) => (errors[path] = message));
@@ -130,10 +171,12 @@ const addIssue = async (req, res) => {
         title,
         description,
         section,
+        images,
         department,
         scope,
         id
       );
+      if (images.length > 0) await updateImageIssueId(images, id);
       res.status(200).json({
         code: "OK",
         result: "SUCCESS",
@@ -141,7 +184,7 @@ const addIssue = async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
     res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
   }
 };
@@ -388,7 +431,7 @@ const deleteIssue = async (req, res) => {
  * @param {String} section Section of issue
  * @param {String} scope Issue scope
  */
-const validateData = (title, description, section, scope) => {
+const validateData = (title, description, images, section, scope) => {
   const schema = Joi.object({
     title: Joi.string()
       .regex(/\w+/)
@@ -398,6 +441,7 @@ const validateData = (title, description, section, scope) => {
       .regex(/\w+/)
       .rule({ message: "Please provide a valid description" })
       .required(),
+    images: Joi.array().max(3).required(),
     section: Joi.string()
       .regex(/\w+/)
       .rule({ message: "Please provide a valid section" })
@@ -408,7 +452,7 @@ const validateData = (title, description, section, scope) => {
       .required(),
   }).options({ abortEarly: false });
 
-  return schema.validate({ title, description, section, scope });
+  return schema.validate({ title, description, images, section, scope });
 };
 
 module.exports = {
@@ -416,6 +460,7 @@ module.exports = {
   getAllResolvedIssues,
   getAllUnresolvedIssues,
   getIssueById,
+  saveImages,
   addIssue,
   updateIssue,
   postComment,

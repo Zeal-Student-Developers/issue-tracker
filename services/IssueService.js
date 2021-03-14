@@ -62,17 +62,27 @@ class IssueService {
    * @param {String} title Title of the Issue.
    * @param {String} description Description of the issue.
    * @param {String} section Section to which the issue belongs.
+   * @param {String[]} images Paths to images for the issue.
    * @param {String} scope Scope of the issue.
    * @param {String} department Department to which the issue belongs.
    * @param {String} userID userID of the user who created the issue.
    * @returns {Promise<Document>} The newly created Issue.
    */
-  async addIssue(title, description, section, department, scope, userID) {
+  async addIssue(
+    title,
+    description,
+    section,
+    images,
+    department,
+    scope,
+    userID
+  ) {
     try {
       const issue = await Issue.create({
         title: title,
         description: description,
         section: section,
+        images: images,
         department: department,
         scope: scope,
         isEdited: false,

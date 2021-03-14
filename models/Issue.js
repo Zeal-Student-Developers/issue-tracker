@@ -10,6 +10,10 @@ const IssueSchema = new Schema({
     type: String,
     default: "",
   },
+  images: {
+    type: [String],
+    required: true,
+  },
   section: {
     type: String,
     required: true,

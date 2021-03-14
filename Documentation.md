@@ -9,6 +9,7 @@
       - [Login](#login)
       - [Refreshing the JWT token](#refreshing-the-jwt-token)
   - [Users](#users)
+    - [User Resource](#user-resource)
     - [Creating Users](#creating-users)
       - [Create user profile](#create-user-profile)
     - [Getting Users](#getting-users)
@@ -143,6 +144,18 @@ statusCode: 200
 ## Users
 
 >**Note:** All requests must contain the valid non-expired JWT token in the `authorization` header as `Bearer [the JWT token].
+
+### User Resource
+The following details about the user are returned:
+```JSON
+{
+  "zprn": "user's zprn",
+  "firstName": "user's firstName",
+  "lastName": "user's lastName",
+  "department": "user's department",
+  "role": "user's role",
+}
+```
 
 ### Creating Users
 
@@ -419,8 +432,31 @@ _Successful Response format_:
 ## Issues
 
 ### Creating Issues
-
 #### Create Issue
+Creating an issue is a two-step process:
+
+**Step I:** Sending images, if any.
+
+**Method**: **`POST`**
+<br>
+**URL**: **`api/issues/images`**
+<br>
+**Accessible to**: `All`
+
+**Required parameters**: The image(s) must be sent in `multipart/form-data` format, with the fieldname as `images`.
+
+_Successful Response format_:
+```JSON
+statusCode : 200
+{
+  "code": "OK",
+  "result": "SUCCESS",
+  "files": "[paths to images]",
+}
+```
+
+**Step II:** Sending issue details.
+
 **Method**: **`POST`**
 <br>
 **URL**: **`api/issues/`**
@@ -430,16 +466,18 @@ _Successful Response format_:
 **Required parameters**:
 ```JSON
 {
-  "title": [title of the issue],
-  "description": [description of the issue],
-  "section": [section to which the issue belongs],
-  "scope": [scope of the issue, [INTITUTE/DEPARTMENT]],
+  "title": "title of the issue",
+  "description": "description of the issue",
+  "images":"[paths to images]",
+  "section": "section to which the issue belongs",
+  "scope": "scope of the issue, [INTITUTE/DEPARTMENT]",
 }
 ```
-- `name` should be in `String` format.
+- `title` should be in `String` format.
 - `description` should be in `String` format.
+- `images` must be an array of paths to the images returned by the **STEP 1**. If there are no images, an empty array must be sent.
 - `section` must be in `String` format.
-- `scope` must be one of the two: `department` or `institute`.
+- `scope` must be one of the two: `DEPARTMENT` or `INSTITUTE`.
 
 
 _Successful Response format_:

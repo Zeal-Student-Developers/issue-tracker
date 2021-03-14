@@ -85,4 +85,6 @@ const IssueSchema = new Schema({
   },
 });
 
+IssueSchema.index({ title: "text", description: "text" });
+
 module.exports = model("Issue", IssueSchema);

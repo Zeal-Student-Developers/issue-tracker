@@ -58,6 +58,20 @@ class IssueService {
   }
 
   /**
+   * Finds issues containing given keywords.
+   * @param {String} phrase String containing keywords to find in issues
+   * @returns {Promise<Document[]>} List of issues containing given keywords.
+   */
+  async getAllIssuesByPhrase(phrase) {
+    const keywords = phrase.trim().replace(/[\s\n]+/gi, "|");
+    const regex = new RegExp(keywords, "gi");
+    const issues = await Issue.find({
+      $or: [{ title: regex }, { description: regex }],
+    });
+    return issues;
+  }
+
+  /**
    * Creates a new issue & saves into the database.
    * @param {String} title Title of the Issue.
    * @param {String} description Description of the issue.

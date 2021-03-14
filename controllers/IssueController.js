@@ -114,6 +114,43 @@ const getIssueById = async (req, res) => {
 };
 
 /**
+ * Controller to get issue containing given phrases
+ * @param {Request} req Request Object
+ * @param {Response} res Response Object
+ */
+const getIssuesByPhrase = async (req, res) => {
+  const { phrase } = req.body;
+  if (phrase) {
+    const { role, department } = req.user;
+    try {
+      const issues = await issueService.getAllIssuesByPhrase(phrase);
+      if (role === "auth_level_three") {
+        res.status(200).json({
+          code: "OK",
+          result: "SUCCESS",
+          issues,
+        });
+      } else {
+        res.status(200).json({
+          code: "OK",
+          result: "SUCCESS",
+          issues: issues.filter(
+            (issue) =>
+              issue.department === department || issue.scope === "INSTITUTE"
+          ),
+        });
+      }
+    } catch (error) {
+      res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
+    }
+  } else {
+    res
+      .status(400)
+      .send(new Error("BAD_REQUEST", "Please provide a phrase to search"));
+  }
+};
+
+/**
  * Controller to upload images to file server
  * @param {Request} req Request Object
  * @param {Response} res Response Object
@@ -460,6 +497,7 @@ module.exports = {
   getAllResolvedIssues,
   getAllUnresolvedIssues,
   getIssueById,
+  getIssuesByPhrase,
   saveImages,
   addIssue,
   updateIssue,

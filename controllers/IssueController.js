@@ -11,13 +11,14 @@ const { uploadImages, updateImageIssueId } = require("../services/FileService");
  */
 const getAllIssues = async (req, res) => {
   let issues = null;
-  const { role, department } = req.user;
+  const { id, role, department } = req.user;
   try {
     if (role === "auth_level_three") {
       issues = await issueService.getAllIssues();
     } else {
       issues = await issueService.getAllIssuesByDepartment(department);
     }
+    issues = issues.map((issue) => filterIssueProperties(issue, id));
   } catch (error) {
     return res
       .status(500)
@@ -37,13 +38,14 @@ const getAllIssues = async (req, res) => {
  */
 const getAllResolvedIssues = async (req, res) => {
   let issues = null;
-  const { role, department } = req.user;
+  const { id, role, department } = req.user;
   try {
     if (role === "auth_level_three") {
       issues = await issueService.getAllIssues();
     } else {
       issues = await issueService.getAllIssuesByDepartment(department);
     }
+    issues = issues.map((issue) => filterIssueProperties(issue, id));
   } catch (error) {
     return res
       .status(500)
@@ -64,13 +66,14 @@ const getAllResolvedIssues = async (req, res) => {
  */
 const getAllUnresolvedIssues = async (req, res) => {
   let issues = null;
-  const { role, department } = req.user;
+  const { id, role, department } = req.user;
   try {
     if (role === "auth_level_three") {
       issues = await issueService.getAllIssues();
     } else {
       issues = await issueService.getAllIssuesByDepartment(department);
     }
+    issues = issues.map((issue) => filterIssueProperties(issue, id));
   } catch (error) {
     return res
       .status(500)
@@ -91,11 +94,11 @@ const getAllUnresolvedIssues = async (req, res) => {
  */
 const getIssueById = async (req, res) => {
   let issue = null;
-  const { role, department } = req.user;
+  const { id, role, department } = req.user;
   try {
     issue = await issueService.getIssueById(req.params.id);
-
     if (issue) {
+      issue = filterIssueProperties(issue, id);
       if (issue.department !== department && role !== "auth_level_three")
         res.status(403).send(new Error("FORBIDDEN", "Action not allowed"));
       else {
@@ -121,9 +124,10 @@ const getIssueById = async (req, res) => {
 const getIssuesByPhrase = async (req, res) => {
   const { phrase } = req.body;
   if (phrase) {
-    const { role, department } = req.user;
+    const { id, role, department } = req.user;
     try {
-      const issues = await issueService.getAllIssuesByPhrase(phrase);
+      let issues = await issueService.getAllIssuesByPhrase(phrase);
+      issues = issues.map((issue) => filterIssueProperties(issue, id));
       if (role === "auth_level_three") {
         res.status(200).json({
           code: "OK",
@@ -457,6 +461,28 @@ const deleteIssue = async (req, res) => {
   } catch (error) {
     res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
   }
+};
+
+/**
+ * Filters Issue properties from the given object
+ * @param {Document} issue Mongoose Issue Object
+ * @param {String} userId ID of the current user
+ * @returns {Document} issue object with only required properties
+ */
+const filterIssueProperties = function (issue, userId) {
+  const filteredIssue = JSON.parse(JSON.stringify(issue));
+
+  filteredIssue["isAuthor"] = filteredIssue.createdBy.toString() === userId;
+  filteredIssue["hasUpvoted"] = !!filteredIssue.upvoters.find(
+    (id) => id.toString() === userId
+  );
+
+  delete filteredIssue.__v;
+  delete filteredIssue.isDeleted;
+  delete filteredIssue.createdBy;
+  delete filteredIssue.upvoters;
+
+  return filteredIssue;
 };
 
 // Validations functions

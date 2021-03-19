@@ -19,6 +19,7 @@ exports.roles = (() => {
     .readOwn("profile")
     .updateOwn("profile")
     .deleteOwn("profile")
+    .readAny("issue")
     .createAny("comment")
     .createOwn("solution");
 

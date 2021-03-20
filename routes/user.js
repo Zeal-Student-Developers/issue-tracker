@@ -1,10 +1,12 @@
 const router = require("express").Router();
 
 const userService = require("../services/UserService");
+const { saveCsv } = require("../services/FileService");
 
 const {
   getOwnUserInfo,
   addUser,
+  addUsersFromFile,
   updateOwnUserPassword,
   updateOwnUserProfile,
   deleteOwnUserProfile,
@@ -30,6 +32,14 @@ router.post(
   userService.allowIfLoggedIn,
   userService.hasAccessTo("createAny", "profile"),
   async (req, res) => addUser(req, res)
+);
+
+router.post(
+  "/add/bulk",
+  userService.allowIfLoggedIn,
+  userService.hasAccessTo("createAny", "profile"),
+  saveCsv,
+  addUsersFromFile
 );
 
 router.patch(

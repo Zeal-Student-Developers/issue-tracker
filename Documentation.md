@@ -198,6 +198,61 @@ statusCode: 201
 
 **[⬆Back to index](#index)**
 
+#### Creating user profiles from CSV file:
+
+ 
+**Method**: **`POST`**
+<br>
+**URL**: **`api/users/add/all`**
+<br>
+**Accessible to**: `All`
+
+**Required parameters**: The csv file must be sent to the API in `multipart/form-data` format, with the fieldname as `users`.
+<br>
+The CSV file must contain a header and must be in the following format: 
+<table>
+  <tr>
+    <th>ZPRN</th>
+    <th>FIRST_NAME</th>
+    <th>LAST_NAME</th>
+    <th>PASSWORD</th>
+    <th>DEPARTMENT</th>
+    <th>ROLE</th>
+  </tr>
+  <tr>
+    <td colspan="6" style="text-align:center;font-style:italic">Data</td>
+  </tr>
+</table>
+
+_Successful Response format_:
+<br>
+If there were no errors in creating the users, the API would respond with:
+
+```JSON
+statusCode : 200
+
+{
+  "code": "OK",
+  "result": "SUCCESS",
+  "message": "User profiles created",
+}
+```
+
+The API checks the entire data once before creating the user profiles. If any user has inappropriate/insufficient data, the API would respond with:
+
+```JSON
+statusCode : 400
+
+{
+  "code": "BAD_REQUEST",
+  "result": "FAILURE",
+  "message": "Users with zprn [list] have inappropriate/insufficient data"
+}
+```
+- The `list` would be a comma-seperated list of zprns of users profiles having inappropriate/insufficient data, with parantheses.
+
+> **Note:** If any user has inappropriate/insufficient data, no user profiles are created at all. The client must again make a `POST` request to the API with the entire corrected data.
+
 ### Getting Users
 
 #### Get all user profiles

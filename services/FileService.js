@@ -29,6 +29,14 @@ const saveImages = multer({
 }).array("images", MAX_IMAGE_COUNT);
 
 /**
+ * Express middleware for storing csv containing user details on local
+ * storage.
+ */
+const saveCsv = multer({
+  storage: storage,
+}).single("users");
+
+/**
  * Uploads given images to remote server
  * @param {Express.Multer.File[]} images images to be uploaded
  * @param {String} userId ID of the user storing the files
@@ -75,4 +83,4 @@ const updateImageIssueId = async (images, issueId) => {
   );
 };
 
-module.exports = { saveImages, uploadImages, updateImageIssueId };
+module.exports = { saveImages, uploadImages, updateImageIssueId, saveCsv };

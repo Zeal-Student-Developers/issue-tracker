@@ -1,5 +1,7 @@
 const bcrypt = require("bcryptjs");
 const Joi = require("@hapi/joi");
+const { readFileSync, unlinkSync } = require("fs");
+const { parse } = require("papaparse");
 
 const Error = require("../models/Error");
 const userService = require("../services/UserService");
@@ -60,6 +62,79 @@ const addUser = async (req, res) => {
   } catch (error) {
     res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
   }
+};
+
+/**
+ * Controller for adding users from csv file
+ * @param {Request} req Request Object
+ * @param {Response} res Response Object
+ */
+const addUsersFromFile = async function (req, res) {
+  const file = req.file;
+  let str = undefined;
+  let users = [];
+  try {
+    str = readFileSync(file.path).toString();
+    const { data } = parse(str);
+    users = data.slice(1, -1);
+  } catch (error) {
+    return res
+      .status(500)
+      .send(new Error("INTERNAL_SERVER_ERROR", error.message));
+  } finally {
+    unlinkSync(file.path);
+  }
+
+  // Array to store zprn of users having inappropriate/insufficient data
+  const erroneousUsers = [];
+
+  users.forEach((user) => {
+    const [zprn, firstName, lastName, password, department, role] = user;
+    const { error } = validateData(
+      zprn,
+      firstName,
+      lastName,
+      password,
+      department,
+      role
+    );
+    if (error) erroneousUsers.push(zprn);
+  });
+
+  if (erroneousUsers.length > 0) {
+    return res
+      .status(400)
+      .send(
+        new Error(
+          "BAD_REQUEST",
+          `Users with zprn [${erroneousUsers.join(
+            ", "
+          )}] have inappropriate/insufficient data`
+        )
+      );
+  }
+
+  users.forEach(async (user) => {
+    const [zprn, firstName, lastName, password, department, role] = user;
+
+    try {
+      await userService.addUser(
+        zprn,
+        firstName,
+        lastName,
+        password,
+        department,
+        role.toLowerCase()
+      );
+    } catch (error) {
+      erroneousUsers.push(zprn);
+    }
+  });
+  res.status(200).json({
+    code: "CREATED",
+    result: "SUCCESS",
+    message: "User profiles created",
+  });
 };
 
 const updateOwnUserPassword = async (req, res) => {
@@ -271,6 +346,7 @@ function validatePassword(old, newPassword) {
 module.exports = {
   getOwnUserInfo,
   addUser,
+  addUsersFromFile,
   updateOwnUserPassword,
   updateOwnUserProfile,
   deleteOwnUserProfile,

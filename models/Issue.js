@@ -49,6 +49,9 @@ const IssueSchema = new Schema({
   upvoters: {
     type: [Schema.Types.ObjectId],
   },
+  reporters: {
+    type: [Schema.Types.ObjectId],
+  },
   comments: {
     type: [
       {

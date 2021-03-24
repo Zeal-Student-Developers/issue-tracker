@@ -13,7 +13,10 @@ exports.roles = (() => {
     .deleteOwn("issue")
     .createAny("comment");
 
-  ac.grant("student_moderator").extend("student").updateAny("issue");
+  ac.grant("student_moderator")
+    .extend("student")
+    .updateAny("issue")
+    .updateAny("profile");
 
   ac.grant("auth_level_one")
     .readOwn("profile")

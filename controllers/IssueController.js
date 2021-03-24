@@ -1,8 +1,14 @@
 const Joi = require("@hapi/joi");
 const issueService = require("../services/IssueService");
+const { getUserById } = require("../services/UserService");
 const Error = require("../models/Error");
 const Image = require("../models/Image");
 const { uploadImages, updateImageIssueId } = require("../services/FileService");
+
+/** Threshold value for reports count on an issue  */
+const ISSUE_REPORTS_THRESHOLD = 75;
+/** Threshold value for code of conduct violations by users  */
+const USER_VIOLATIONS_THRESHOLD = 5;
 
 /**
  * Controller to get all the issues
@@ -345,24 +351,60 @@ const toggleUpvote = async (req, res) => {
  */
 const toggleInappropriate = async (req, res) => {
   const { id } = req.params;
-  const { role } = req.user;
-  if (role === "student_moderator") {
+  const { id: userId, department, role } = req.user;
+  let userReported = false;
+
+  try {
     const issue = await issueService.getIssueById(id);
     if (issue) {
-      issue.isInappropriate = !issue.isInappropriate;
-      await issue.save();
-      res.status(200).json({
-        code: "OK",
-        result: "SUCCESS",
-        message: issue.isInappropriate
-          ? "Issue marked as inappropriate"
-          : "Inappropriate mark for the issue removed",
-      });
+      if (
+        issue.department === department ||
+        ["auth_level_two", "auth_level_three"].includes(role)
+      ) {
+        if (issue.reporters.find((id) => id.toString() === userId)) {
+          issue.reporters = issue.reporters.filter(
+            (id) => id.toString() !== userId
+          );
+        } else {
+          issue.reporters.push(userId);
+          userReported = true;
+        }
+
+        const author = await getUserById(issue.createdBy.toString());
+        if (issue.reporters.length >= ISSUE_REPORTS_THRESHOLD) {
+          issue.isInappropriate = true;
+          if (!author.violations.find((id) => id.toString() === issue.id)) {
+            author.violations.push(issue.id);
+          }
+        } else {
+          issue.isInappropriate = false;
+          if (author.violations.find((id) => id.toString() === issue.id)) {
+            author.violations = author.violations.filter(
+              (id) => id.toString() !== issue.id
+            );
+          }
+        }
+        author.isDisabled =
+          author.violations.length >= USER_VIOLATIONS_THRESHOLD;
+
+        await author.save();
+        await issue.save();
+
+        res.status(200).json({
+          code: "OK",
+          result: "SUCCESS",
+          message: userReported
+            ? "Issue marked as inappropriate"
+            : "Inappropriate mark for the issue removed",
+        });
+      } else {
+        res.status(403).send(new Error("FORBIDDEN", "Action not allowed"));
+      }
     } else {
       res.status(400).send(new Error("BAD_REQUEST", "No issue found"));
     }
-  } else {
-    res.status(403).send(new Error("FORBIDDEN", "Action not allowed"));
+  } catch (error) {
+    res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
   }
 };
 
@@ -476,9 +518,13 @@ const filterIssueProperties = function (issue, userId) {
   filteredIssue["hasUpvoted"] = !!filteredIssue.upvoters.find(
     (id) => id.toString() === userId
   );
+  filteredIssue["hasReported"] = !!filteredIssue.reporters.find(
+    (id) => id.toString() === userId
+  );
 
   delete filteredIssue.__v;
   delete filteredIssue.isDeleted;
+  delete filteredIssue.reporters;
   delete filteredIssue.createdBy;
   delete filteredIssue.upvoters;
 

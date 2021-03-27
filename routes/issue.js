@@ -6,7 +6,7 @@ const {
   getAllUnresolvedIssues,
   getIssueById,
   getIssuesByPhrase,
-  saveImages: saveImagesController,
+  saveImagesController,
   addIssue,
   toggleResolveStatus,
   postComment,
@@ -90,7 +90,7 @@ router.put(
 
 // Post a comment on an issue
 router.put(
-  ":id/comment",
+  "/:id/comment",
   allowIfLoggedIn,
   hasAccessTo("createAny", "comment"),
   postComment
@@ -100,7 +100,7 @@ router.put(
 router.put(
   "/:id/solution",
   allowIfLoggedIn,
-  hasAccessTo("createAny", "solution"),
+  hasAccessTo("createOwn", "solution"),
   postSolution
 );
 

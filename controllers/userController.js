@@ -1,23 +1,38 @@
 const bcrypt = require("bcryptjs");
-const Joi = require("@hapi/joi");
 const { readFileSync, unlinkSync } = require("fs");
 const { parse } = require("papaparse");
 
+const {
+  getUserById,
+  getAllUsers,
+  createUser,
+  updateUser,
+  deleteUser,
+} = require("../services/UserService");
+const {
+  validateUserData,
+  validatePasswords,
+  validateUpdateUserData,
+} = require("../misc/validation/userController");
 const Error = require("../models/Error");
-const userService = require("../services/UserService");
 
-const getOwnUserInfo = async (req, res) => {
+/**
+ * Controller to handle get own profile user
+ * @param {Request} req
+ * @param {Response} res
+ */
+const getOwnProfileController = async function (req, res) {
   const { id } = req.user;
   try {
-    const user = await userService.getUserById(id);
-    if (user === null) {
-      res.status(400).json(new Error("BAD_REQUEST", "No user found!"));
+    const user = await getUserById(id);
+    if (!user) {
+      res.status(400).json(new Error("BAD_REQUEST", "No user found"));
     } else {
       res.status(200).json({
         code: "OK",
         result: "SUCCESS",
         user: {
-          zprn: user.zprn,
+          userId: user.userId,
           firstName: user.firstName,
           lastName: user.lastName,
           department: user.department,
@@ -29,34 +44,41 @@ const getOwnUserInfo = async (req, res) => {
   }
 };
 
-const addUser = async (req, res) => {
-  let { zprn, firstName, lastName, password, department, role } = req.body;
+/**
+ * Controller to handle add user
+ * @param {Request} req
+ * @param {Response} res
+ */
+const addUserController = async function (req, res) {
+  const { userId, firstName, lastName, password, department, role } = req.body;
   try {
-    const { error } = validateData(
-      zprn,
+    const errors = validateUserData(
+      userId,
       firstName,
       lastName,
       password,
       department,
       role
     );
-    if (error !== undefined) {
-      res.status(400).send(new Error("BAD_REQUEST", error.details[0].message));
+    if (errors) {
+      res.status(400).send(new Error("BAD_REQUEST", errors));
     } else {
       const salt = bcrypt.genSaltSync(10);
       const hashedPassword = bcrypt.hashSync(password, salt);
-      await userService.addUser(
-        zprn,
+
+      await createUser(
+        userId,
         firstName,
         lastName,
         hashedPassword,
         department,
         role
       );
-      res.status(201).json({
+
+      res.status(200).json({
         code: "CREATED",
-        msg: "User added!",
         result: "SUCCESS",
+        message: "User added",
       });
     }
   } catch (error) {
@@ -69,13 +91,19 @@ const addUser = async (req, res) => {
  * @param {Request} req Request Object
  * @param {Response} res Response Object
  */
-const addUsersFromFile = async function (req, res) {
+const addUsersFromFileController = async function (req, res) {
   const file = req.file;
-  let str = undefined;
+  if (!file) {
+    res
+      .status(400)
+      .send(new Error("BAD_REQUEST", "Please provide a data file"));
+    return;
+  }
+  let dataString = undefined;
   let users = [];
   try {
-    str = readFileSync(file.path).toString();
-    const { data } = parse(str);
+    dataString = readFileSync(file.path).toString();
+    const { data } = parse(dataString);
     users = data.slice(1, -1);
   } catch (error) {
     return res
@@ -85,20 +113,20 @@ const addUsersFromFile = async function (req, res) {
     unlinkSync(file.path);
   }
 
-  // Array to store zprn of users having inappropriate/insufficient data
+  // Array to store userId of users having inappropriate/insufficient data
   const erroneousUsers = [];
 
   users.forEach((user) => {
-    const [zprn, firstName, lastName, password, department, role] = user;
-    const { error } = validateData(
-      zprn,
+    const [userId, firstName, lastName, password, department, role] = user;
+    const errors = validateUserData(
+      userId,
       firstName,
       lastName,
       password,
       department,
       role
     );
-    if (error) erroneousUsers.push(zprn);
+    if (errors) erroneousUsers.push(userId);
   });
 
   if (erroneousUsers.length > 0) {
@@ -107,7 +135,7 @@ const addUsersFromFile = async function (req, res) {
       .send(
         new Error(
           "BAD_REQUEST",
-          `Users with zprn [${erroneousUsers.join(
+          `Users with userId [${erroneousUsers.join(
             ", "
           )}] have inappropriate/insufficient data`
         )
@@ -115,19 +143,22 @@ const addUsersFromFile = async function (req, res) {
   }
 
   users.forEach(async (user) => {
-    const [zprn, firstName, lastName, password, department, role] = user;
+    const [userID, firstName, lastName, password, department, role] = user;
+
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = bcrypt.hashSync(password, salt);
 
     try {
-      await userService.addUser(
-        zprn,
+      await createUser(
+        userID,
         firstName,
         lastName,
-        password,
+        hashedPassword,
         department,
         role.toLowerCase()
       );
     } catch (error) {
-      erroneousUsers.push(zprn);
+      erroneousUsers.push(userId);
     }
   });
   res.status(200).json({
@@ -137,39 +168,48 @@ const addUsersFromFile = async function (req, res) {
   });
 };
 
-const updateOwnUserPassword = async (req, res) => {
+/**
+ * Controller to handle update user's own passoword
+ * @param {Request} req
+ * @param {Response} res
+ */
+const updateOwnPasswordController = async function (req, res) {
   const { id } = req.user;
   try {
-    const { oldPassword, newPassword } = req.body;
-    const { error } = validatePassword(oldPassword, newPassword);
-    if (error !== undefined) {
-      res.status(400).send(new Error("BAD_REQUEST", error.details[0].message));
+    const { oldPassword: old, newPassword: _new } = req.body;
+    const errors = validatePasswords(old, _new);
+    if (errors) {
+      res.status(400).send(new Error("BAD_REQUEST", errors));
     } else {
+      const oldPassword = old.trim();
+      const newPassword = _new.trim();
+
       if (oldPassword === newPassword) {
         res
           .status(400)
           .send(
             new Error(
               "BAD_REQUEST",
-              "New password should be different from previous password."
+              "New password should be different from previous password"
             )
           );
         return;
       }
       try {
-        const user = await userService.getUserById(id);
+        const user = await getUserById(id);
         if (user) {
           const match = bcrypt.compareSync(oldPassword, user.password);
           if (match) {
             const hashedPassword = bcrypt.hashSync(newPassword, 10);
-            await userService.updateUser({
+            await updateUser({
               id: id,
               password: hashedPassword,
             });
+
             res.status(200).json({
               code: "OK",
               result: "SUCCESS",
-              msg: "Password updated!",
+              message: "Password updated",
             });
           } else {
             res
@@ -188,23 +228,37 @@ const updateOwnUserPassword = async (req, res) => {
   }
 };
 
-const updateOwnUserProfile = async (req, res) => {
+/**
+ * Controller to handle update user's profile
+ * @param {Request} req
+ * @param {Response} res
+ */
+const updateOwnProfileController = async function (req, res) {
   const { id } = req.user;
   try {
-    if (JSON.stringify(req.body) === "{}") {
-      res.status(400).send(new Error("BAD_REQUEST", "Insufficient data."));
+    if (Object.keys(req.body).length === 0) {
+      res.status(400).send(new Error("BAD_REQUEST", "Insufficient data"));
     } else {
       const { firstName, lastName, department } = req.body;
-      await userService.updateUser({
+
+      // User should not be updated if no data is provided to update
+      if (!(firstName?.trim() && lastName?.trim() && department?.trim())) {
+        return res
+          .status(400)
+          .send(new Error("BAD_REQUEST", "Please provide required data"));
+      }
+
+      await updateUser({
         id,
-        firstName: firstName,
-        lastName: lastName,
-        department: department,
+        firstName: firstName?.trim(),
+        lastName: lastName?.trim(),
+        department: department?.trim(),
       });
+
       res.status(200).json({
         code: "OK",
         result: "SUCCESS",
-        message: "User updated!",
+        message: "User updated",
       });
     }
   } catch (error) {
@@ -212,30 +266,40 @@ const updateOwnUserProfile = async (req, res) => {
   }
 };
 
-const deleteOwnUserProfile = async (req, res) => {
+/**
+ * Controller to delete user's own profile
+ * @param {Request} req
+ * @param {Response} res
+ */
+const deleteOwnProfileController = async function (req, res) {
   try {
-    await userService.deleteUser(req.user.id);
+    await deleteUser(req.user.id);
     res.status(200).json({
       code: "OK",
       result: "SUCCESS",
-      msg: "User deleted.",
+      message: "User deleted",
     });
   } catch (error) {
     res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
   }
 };
 
-const getUserByUserId = async (req, res) => {
+/**
+ * Controller to handle get user by userId
+ * @param {Request} req
+ * @param {Response} res
+ */
+const getUserByIdController = async function (req, res) {
   try {
-    const user = await userService.getUserById(Number(req.params.id));
-    if (user === null) {
-      res.status(400).send(new Error("BAD_REQUEST", "No user found."));
+    const user = await getUserById(req.params.id);
+    if (!user) {
+      res.status(400).send(new Error("BAD_REQUEST", "No user found"));
     } else {
       res.status(200).json({
         code: "OK",
         result: "SUCCESS",
         user: {
-          zprn: user.zprn,
+          userID: user.userID,
           firstName: user.firstName,
           lastName: user.lastName,
           department: user.department,
@@ -248,56 +312,81 @@ const getUserByUserId = async (req, res) => {
   }
 };
 
-const getAllUsers = async (req, res) => {
+/**
+ * Controller to handle get all users
+ * @param {Request} req
+ * @param {Response} res
+ */
+const getAllUsersController = async function (req, res) {
   try {
-    const users = await userService.getAllUsers();
-    const usersList = users.map((user) => ({
-      zprn: user.zprn,
+    const users = (await getAllUsers()).map((user) => ({
+      userId: user.userId,
       firstName: user.firstName,
       lastName: user.lastName,
       department: user.department,
       role: user.role,
     }));
-    res.status(200).json({ code: "OK", result: "SUCCESS", users: usersList });
+    res.status(200).json({ code: "OK", result: "SUCCESS", users });
   } catch (error) {
     res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
   }
 };
 
-const updateAnyUserProfileByUserId = async (req, res) => {
+/**
+ * Controller to handle update any user by id
+ * @param {Request} req
+ * @param {Response} res
+ */
+const updateAnyProfileController = async function (req, res) {
   try {
-    if (JSON.stringify(req.body) === "{}") {
+    if (Object.keys(req.body).length === 0) {
       res
         .status(400)
         .send(new Error("BAD_REQUEST", "Required fields not provided"));
     } else {
-      const password = req.body.password;
-      const hashedPassword =
-        password != undefined ? bcrypt.hashSync(password, 10) : password;
-      await userService.updateUser({
-        id: req.params.id,
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
-        password: hashedPassword,
-        department: req.body.department,
-        role: req.body.role,
+      const { firstName, lastName, department, role, password } = req.body;
+      const user = validateUpdateUserData({
+        firstName,
+        lastName,
+        department,
+        role,
       });
+      if (!user) {
+        return res
+          .status(400)
+          .send(new Error("BAD_REQUEST", "Please provide required data"));
+      }
+      const hashedPassword = password
+        ? bcrypt.hashSync(password, 10)
+        : password;
+      await updateUser({
+        id: req.params.id,
+        password: hashedPassword,
+        ...user,
+      });
+
       res.status(200).json({
         code: "OK",
         result: "SUCCESS",
-        message: "User updated!",
+        message: "User updated",
       });
     }
   } catch (error) {
+    console.log(error);
     res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
   }
 };
 
-const deleteAnyUserByUserId = async (req, res) => {
+/**
+ * Controller to delete user by id
+ * @param {Request} req
+ * @param {Response} res
+ */
+const deleteAnyUserController = async function (req, res) {
   try {
-    const user = await userService.deleteUser(Number(req.params.id));
-    if (user === null) {
-      res.status(400).send(new Error("BAD_REQUEST", "No user found."));
+    const user = await deleteUser(req.params.id);
+    if (!user) {
+      res.status(400).send(new Error("BAD_REQUEST", "No user found"));
     } else {
       res.status(200).json({
         code: "OK",
@@ -310,48 +399,15 @@ const deleteAnyUserByUserId = async (req, res) => {
   }
 };
 
-/*
- * VALIDATION FUNCTIONS
- */
-
-function validateData(zprn, firstName, lastName, password, department, role) {
-  const schema = Joi.object({
-    zprn: Joi.string().required().length(7).regex(/^\d+$/),
-    firstName: Joi.string().required(),
-    lastName: Joi.string().required(),
-    password: Joi.string().required().min(6),
-    department: Joi.string().required().min(3),
-    role: Joi.string().required(),
-  });
-
-  return schema.validate({
-    zprn: zprn,
-    firstName: firstName,
-    lastName: lastName,
-    password: password,
-    department: department,
-    role: role,
-  });
-}
-
-function validatePassword(old, newPassword) {
-  const schema = Joi.object({
-    oldPassword: Joi.string().required(),
-    newPassword: Joi.string().required().min(6),
-  });
-
-  return schema.validate({ oldPassword: old, newPassword: newPassword });
-}
-
 module.exports = {
-  getOwnUserInfo,
-  addUser,
-  addUsersFromFile,
-  updateOwnUserPassword,
-  updateOwnUserProfile,
-  deleteOwnUserProfile,
-  getUserByUserId,
-  getAllUsers,
-  updateAnyUserProfileByUserId,
-  deleteAnyUserByUserId,
+  addUser: addUserController,
+  addUsersFromFile: addUsersFromFileController,
+  getOwnProfile: getOwnProfileController,
+  getUserById: getUserByIdController,
+  getAllUsers: getAllUsersController,
+  updateAnyUserById: updateAnyProfileController,
+  updateOwnPassword: updateOwnPasswordController,
+  updateOwnProfile: updateOwnProfileController,
+  deleteOwnProfile: deleteOwnProfileController,
+  deleteAnyUserById: deleteAnyUserController,
 };

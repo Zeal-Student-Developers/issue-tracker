@@ -25,7 +25,7 @@ const IssueSchema = new Schema({
   scope: {
     type: String,
     required: true,
-    enum: ["DEPARTMENT", "INSTITUTE"],
+    enum: ["DEPARTMENT", "ORGANIZATION"],
   },
   isEdited: {
     type: Boolean,

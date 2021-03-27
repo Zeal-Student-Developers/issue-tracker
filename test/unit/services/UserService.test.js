@@ -41,7 +41,7 @@ describe("UserService", () => {
     });
   });
 
-  describe("getUserByZprn()", () => {
+  describe("getUserByUserId()", () => {
     let userStub;
 
     beforeEach(() => {
@@ -55,7 +55,7 @@ describe("UserService", () => {
     it("resolves if User.findOne resolves with data", async () => {
       userStub.resolves({});
       try {
-        const users = await UserService.getUserByZprn(123131);
+        const users = await UserService.getUserByUserId(123131);
         expect(userStub.calledOnce).to.be.true;
         expect(users).to.be.empty;
       } catch (err) {
@@ -66,7 +66,7 @@ describe("UserService", () => {
     it("rejects if User.findOne rejects with an error", async () => {
       userStub.rejects(new Error("Some Error"));
       try {
-        const users = await UserService.getUserByZprn(12133);
+        const users = await UserService.getUserByUserId(12133);
         expect(users).to.be.undefined;
         expect.fail("It should fail and reject");
       } catch (err) {
@@ -76,10 +76,10 @@ describe("UserService", () => {
     });
   });
 
-  describe("addUser()", () => {
+  describe("createUser()", () => {
     let userStub;
     const userDoc = {
-      zprn: 1100881,
+      userId: 1100881,
       role: "admin",
       firstName: "firstName",
       lastName: "lastName",
@@ -90,16 +90,16 @@ describe("UserService", () => {
     };
 
     beforeEach(() => {
-      userStub = sinon.stub(User.prototype, "save");
+      userStub = sinon.stub(User, "create");
     });
 
     afterEach(() => {
       userStub.restore();
     });
 
-    it("fails if a non-number zprn is passed to it", async () => {
+    it("fails if a non-number userId is passed to it", async () => {
       try {
-        await UserService.addUser(
+        await UserService.createUser(
           "random",
           "firstName",
           "lastName",
@@ -109,7 +109,7 @@ describe("UserService", () => {
         );
       } catch (err) {
         expect(err.message).to.be.eql(
-          'User validation failed: zprn: Cast to Number failed for value "NaN" at path "zprn"'
+          'User validation failed: userId: Cast to Number failed for value "NaN" at path "userId"'
         );
       }
     });
@@ -118,7 +118,7 @@ describe("UserService", () => {
       userStub.resolves(userDoc);
 
       try {
-        const userReturned = await UserService.addUser(
+        const userReturned = await UserService.createUser(
           1100881,
           "firstName",
           "lastName",
@@ -138,7 +138,7 @@ describe("UserService", () => {
       userStub.rejects(new Error("Some Error"));
 
       try {
-        const userReturned = await UserService.addUser(
+        const userReturned = await UserService.createUser(
           1100881,
           "firstName",
           "lastName",
@@ -230,7 +230,7 @@ describe("UserService", () => {
   describe("updateUser()", () => {
     let userStub, stub;
     const userDoc = {
-      zprn: 1100881,
+      userId: 1100881,
       role: "admin",
       firstName: "firstName",
       lastName: "lastName",

@@ -11,15 +11,10 @@ class IssueService {
    * @returns {Promise<Document[]>} List of all the issues.
    */
   async getAllIssues() {
-    try {
-      const issues = await Issue.find({
-        isInappropriate: false,
-        isDeleted: false,
-      }).sort("-upvotes");
-      return Promise.resolve(issues);
-    } catch (error) {
-      return Promise.reject(error);
-    }
+    return await Issue.find({
+      isInappropriate: false,
+      isDeleted: false,
+    }).sort("-upvotes");
   }
 
   /**
@@ -28,16 +23,11 @@ class IssueService {
    * @returns {Promise<Document[]>} List of all the issues by specified department.
    */
   async getAllIssuesByDepartment(dept) {
-    try {
-      const issues = await Issue.find({
-        isInappropriate: false,
-        isDeleted: false,
-        $or: [{ department: dept }, { scope: "INSTITUTE" }],
-      }).sort("-upvotes");
-      return Promise.resolve(issues);
-    } catch (error) {
-      return Promise.reject(error);
-    }
+    return await Issue.find({
+      isInappropriate: false,
+      isDeleted: false,
+      $or: [{ department: dept }, { scope: "ORGANIZATION" }],
+    }).sort("-upvotes");
   }
 
   /**
@@ -46,15 +36,10 @@ class IssueService {
    * @returns {Promise<Document>} Issue with the specified ID.
    */
   async getIssueById(id) {
-    try {
-      const issue = await Issue.findOne({
-        _id: id,
-        isDeleted: false,
-      });
-      return Promise.resolve(issue);
-    } catch (error) {
-      return Promise.reject(error);
-    }
+    return await Issue.findOne({
+      _id: id,
+      isDeleted: false,
+    });
   }
 
   /**
@@ -82,7 +67,7 @@ class IssueService {
    * @param {String} userID userID of the user who created the issue.
    * @returns {Promise<Document>} The newly created Issue.
    */
-  async addIssue(
+  async createIssue(
     title,
     description,
     section,
@@ -91,28 +76,23 @@ class IssueService {
     scope,
     userID
   ) {
-    try {
-      const issue = await Issue.create({
-        title: title,
-        description: description,
-        section: section,
-        images: images,
-        department: department,
-        scope: scope,
-        isEdited: false,
-        isResolved: false,
-        isInappropriate: false,
-        upvotes: 0,
-        upvoters: [],
-        comments: [],
-        solutions: [],
-        createdBy: userID,
-        createdOn: new Date().toLocaleString(),
-      });
-      return Promise.resolve(issue);
-    } catch (error) {
-      return Promise.reject(error);
-    }
+    return await Issue.create({
+      title: title,
+      description: description,
+      section: section,
+      images: images,
+      department: department,
+      scope: scope,
+      isEdited: false,
+      isResolved: false,
+      isInappropriate: false,
+      upvotes: 0,
+      upvoters: [],
+      comments: [],
+      solutions: [],
+      createdBy: userID,
+      createdOn: new Date().toLocaleString(),
+    });
   }
 
   /**
@@ -121,47 +101,43 @@ class IssueService {
    * @returns {Promise<Document>} The updated issue.
    */
   async updateIssue(updatedIssue) {
-    try {
-      const issue = await Issue.findById(updatedIssue.id);
-      if (issue) {
-        issue.name = updatedIssue.name || issue.name;
-        issue.description = updatedIssue.description || issue.description;
-        issue.section = updatedIssue.section || issue.section;
-        issue.department = updatedIssue.department || issue.department;
-        issue.isEdited = updatedIssue.isEdited || issue.isEdited;
-        issue.isResolved = updatedIssue.isResolved || issue.isResolved;
-        issue.isInappropriate =
-          updatedIssue.isInappropriate || issue.isInappropriate;
+    const issue = await Issue.findById(updatedIssue.id);
+    if (issue) {
+      issue.name = updatedIssue.name || issue.name;
+      issue.description = updatedIssue.description || issue.description;
+      issue.section = updatedIssue.section || issue.section;
+      issue.department = updatedIssue.department || issue.department;
+      issue.isEdited = updatedIssue.isEdited || issue.isEdited;
+      issue.isResolved = updatedIssue.isResolved || issue.isResolved;
+      issue.isInappropriate =
+        updatedIssue.isInappropriate || issue.isInappropriate;
 
-        let userID = null;
+      let userID = null;
 
-        if ((userID = updatedIssue.upvoters)) {
-          // If user has already upvoted the issue, remove the upvote.
-          if (issue.upvoters.includes(userID)) {
-            issue.upvotes -= 1;
-            issue.upvoters = issue.upvoters.filter((id) => id !== userID);
-          } else {
-            // Else, add the userID to upvoters list.
-            issue.upvotes += 1;
-            issue.upvoters.push(userID);
-          }
+      if ((userID = updatedIssue.upvoters)) {
+        // If user has already upvoted the issue, remove the upvote.
+        if (issue.upvoters.includes(userID)) {
+          issue.upvotes -= 1;
+          issue.upvoters = issue.upvoters.filter((id) => id !== userID);
+        } else {
+          // Else, add the userID to upvoters list.
+          issue.upvotes += 1;
+          issue.upvoters.push(userID);
         }
-
-        let comment = null;
-        if ((comment = updatedIssue.comments)) {
-          issue.comments.push(comment);
-        }
-
-        let solution = null;
-        if ((solution = updatedIssue.solutions)) {
-          issue.solutions.push(solution);
-        }
-        return Promise.resolve(await issue.save());
       }
-      return Promise.resolve(null);
-    } catch (error) {
-      return Promise.reject(error);
+
+      let comment = null;
+      if ((comment = updatedIssue.comments)) {
+        issue.comments.push(comment);
+      }
+
+      let solution = null;
+      if ((solution = updatedIssue.solutions)) {
+        issue.solutions.push(solution);
+      }
+      return await issue.save();
     }
+    return null;
   }
 
   /**
@@ -170,16 +146,11 @@ class IssueService {
    * @returns {Promise<Document>} The deleted issue.
    */
   async deleteIssue(id) {
-    try {
-      const issue = await Issue.findByIdAndUpdate(
-        id,
-        { isDeleted: true },
-        { runValidators: true, new: true }
-      );
-      return Promise.resolve(issue);
-    } catch (error) {
-      return Promise.reject(error);
-    }
+    return await Issue.findByIdAndUpdate(
+      id,
+      { isDeleted: true },
+      { runValidators: true, new: true }
+    );
   }
 }
 

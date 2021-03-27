@@ -49,7 +49,7 @@ describe("JwtService", () => {
       expect(stub.called).to.be.false;
       expect(token).to.be.undefined;
       expect(error.message).to.eql(
-        "Payload must be a valid object with one or more properties."
+        "Payload must be a valid object with one or more properties"
       );
     });
   });
@@ -101,7 +101,7 @@ describe("JwtService", () => {
       expect(stub.called).to.be.false;
       expect(payload).to.be.undefined;
       expect(error.message).to.eql(
-        "Authorization header must contain a valid JWT token."
+        "Authorization header must contain a valid JWT token"
       );
     });
   });
@@ -153,7 +153,7 @@ describe("JwtService", () => {
       expect(stub.called).to.be.false;
       expect(payload).to.be.undefined;
       expect(error.message).to.eql(
-        "Authorization header must contain a valid JWT token."
+        "Authorization header must contain a valid JWT token"
       );
     });
   });

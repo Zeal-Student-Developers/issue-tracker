@@ -38,7 +38,7 @@ describe("IssueService", () => {
     });
   });
 
-  describe("addIssue()", () => {
+  describe("createIssue()", () => {
     const newIssue = {
       name: "Test",
       description: "description",
@@ -64,7 +64,7 @@ describe("IssueService", () => {
     it("Resolves if Issue.create resolves", async () => {
       create.resolves(newIssue);
       try {
-        const issue = await issueService.addIssue(
+        const issue = await issueService.createIssue(
           "Test",
           "description",
           "section",

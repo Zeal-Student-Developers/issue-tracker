@@ -1,9 +1,15 @@
-const Joi = require("@hapi/joi");
-const issueService = require("../services/IssueService");
+const {
+  getIssueById,
+  getAllIssues,
+  getAllIssuesByDepartment,
+  getAllIssuesByPhrase,
+  createIssue,
+} = require("../services/IssueService");
 const { getUserById } = require("../services/UserService");
 const Error = require("../models/Error");
 const Image = require("../models/Image");
 const { uploadImages, updateImageIssueId } = require("../services/FileService");
+const { validateUserData } = require("../misc/validation/issueController");
 
 /** Threshold value for reports count on an issue  */
 const ISSUE_REPORTS_THRESHOLD = 75;
@@ -11,18 +17,18 @@ const ISSUE_REPORTS_THRESHOLD = 75;
 const USER_VIOLATIONS_THRESHOLD = 5;
 
 /**
- * Controller to get all the issues
+ * Controller to handle get all the issues
  * @param {Request} req Request Object
  * @param {Response} res Response Object
  */
-const getAllIssues = async (req, res) => {
+const getAllIssuesController = async function (req, res) {
   let issues = null;
   const { id, role, department } = req.user;
   try {
     if (role === "auth_level_three") {
-      issues = await issueService.getAllIssues();
+      issues = await getAllIssues();
     } else {
-      issues = await issueService.getAllIssuesByDepartment(department);
+      issues = await getAllIssuesByDepartment(department);
     }
     issues = issues.map((issue) => filterIssueProperties(issue, id));
   } catch (error) {
@@ -30,6 +36,7 @@ const getAllIssues = async (req, res) => {
       .status(500)
       .send(new Error("INTERNAL_SERVER_ERROR", error.message));
   }
+
   res.status(200).json({
     code: "OK",
     result: "SUCCESS",
@@ -38,18 +45,18 @@ const getAllIssues = async (req, res) => {
 };
 
 /**
- * Controller to get all the resolved issues
+ * Controller to handle get all the resolved issues
  * @param {Request} req Request Object
  * @param {Response} res Response Object
  */
-const getAllResolvedIssues = async (req, res) => {
+const getAllResolvedIssuesController = async function (req, res) {
   let issues = null;
   const { id, role, department } = req.user;
   try {
     if (role === "auth_level_three") {
-      issues = await issueService.getAllIssues();
+      issues = await getAllIssues();
     } else {
-      issues = await issueService.getAllIssuesByDepartment(department);
+      issues = await getAllIssuesByDepartment(department);
     }
     issues = issues.map((issue) => filterIssueProperties(issue, id));
   } catch (error) {
@@ -57,6 +64,7 @@ const getAllResolvedIssues = async (req, res) => {
       .status(500)
       .send(new Error("INTERNAL_SERVER_ERROR", error.message));
   }
+
   issues = issues.filter((issue) => issue.isResolved);
   res.status(200).json({
     code: "OK",
@@ -66,18 +74,18 @@ const getAllResolvedIssues = async (req, res) => {
 };
 
 /**
- * Controller to get all the unresolved issues
+ * Controller to handle get all the unresolved issues
  * @param {Request} req Request Object
  * @param {Response} res Response Object
  */
-const getAllUnresolvedIssues = async (req, res) => {
+const getAllUnresolvedIssuesController = async function (req, res) {
   let issues = null;
   const { id, role, department } = req.user;
   try {
     if (role === "auth_level_three") {
-      issues = await issueService.getAllIssues();
+      issues = await getAllIssues();
     } else {
-      issues = await issueService.getAllIssuesByDepartment(department);
+      issues = await getAllIssuesByDepartment(department);
     }
     issues = issues.map((issue) => filterIssueProperties(issue, id));
   } catch (error) {
@@ -85,6 +93,7 @@ const getAllUnresolvedIssues = async (req, res) => {
       .status(500)
       .send(new Error("INTERNAL_SERVER_ERROR", error.message));
   }
+
   issues = issues.filter((issue) => !issue.isResolved);
   res.status(200).json({
     code: "OK",
@@ -94,15 +103,15 @@ const getAllUnresolvedIssues = async (req, res) => {
 };
 
 /**
- * Controller to get issue by ID
+ * Controller to handle get issue by ID
  * @param {Request} req Request Object
  * @param {Response} res Response Object
  */
-const getIssueById = async (req, res) => {
+const getIssueByIdController = async function (req, res) {
   let issue = null;
   const { id, role, department } = req.user;
   try {
-    issue = await issueService.getIssueById(req.params.id);
+    issue = await getIssueById(req.params.id);
     if (issue) {
       issue = filterIssueProperties(issue, id);
       if (issue.department !== department && role !== "auth_level_three")
@@ -123,16 +132,16 @@ const getIssueById = async (req, res) => {
 };
 
 /**
- * Controller to get issue containing given phrases
+ * Controller to handle get issue containing given phrases
  * @param {Request} req Request Object
  * @param {Response} res Response Object
  */
-const getIssuesByPhrase = async (req, res) => {
+const getIssuesByPhraseController = async function (req, res) {
   const { phrase } = req.body;
-  if (phrase) {
+  if (phrase.trim()) {
     const { id, role, department } = req.user;
     try {
-      let issues = await issueService.getAllIssuesByPhrase(phrase);
+      let issues = await getAllIssuesByPhrase(phrase);
       issues = issues.map((issue) => filterIssueProperties(issue, id));
       if (role === "auth_level_three") {
         res.status(200).json({
@@ -146,7 +155,7 @@ const getIssuesByPhrase = async (req, res) => {
           result: "SUCCESS",
           issues: issues.filter(
             (issue) =>
-              issue.department === department || issue.scope === "INSTITUTE"
+              issue.department === department || issue.scope === "ORGANIZATION"
           ),
         });
       }
@@ -161,13 +170,18 @@ const getIssuesByPhrase = async (req, res) => {
 };
 
 /**
- * Controller to upload images to file server
+ * Controller to handle image uploading to file server
  * @param {Request} req Request Object
  * @param {Response} res Response Object
  */
-const saveImages = async (req, res) => {
+const saveImagesController = async function (req, res) {
   const files = req.files;
   const { id } = req.user;
+  if (files.length === 0) {
+    return res
+      .status(400)
+      .send(new Error("BAD_REQUEST", "Please provide images to save"));
+  }
   try {
     const data = await uploadImages(files, id);
     if (data) {
@@ -184,6 +198,7 @@ const saveImages = async (req, res) => {
           createdOn: file.createdOn,
         });
       });
+
       return res.status(200).json({
         code: "OK",
         result: "SUCCESS",
@@ -200,30 +215,29 @@ const saveImages = async (req, res) => {
 };
 
 /**
- * Controller to add new issue
+ * Controller to handle add new issue
  * @param {Request} req Request Object
  * @param {Response} res Response Object
  */
-const addIssue = async (req, res) => {
+const addIssueController = async function (req, res) {
   const { title, description, images, section, scope } = req.body;
   const { department, id } = req.user;
   try {
-    const { error } = validateData(title, description, images, section, scope);
-    if (error) {
-      const errors = {};
-      error.details.forEach(({ path, message }) => (errors[path] = message));
+    const errors = validateUserData(title, description, images, section, scope);
+    if (errors) {
       res.status(400).send(new Error("BAD_REQUEST", errors));
     } else {
-      await issueService.addIssue(
+      const issue = await createIssue(
         title,
         description,
         section,
         images,
         department,
-        scope,
+        scope.toUpperCase(),
         id
       );
-      if (images.length > 0) await updateImageIssueId(images, id);
+      if (images.length > 0) await updateImageIssueId(images, issue.id);
+
       res.status(200).json({
         code: "OK",
         result: "SUCCESS",
@@ -237,25 +251,34 @@ const addIssue = async (req, res) => {
 };
 
 /**
- * Controller to update issue
+ * Controller to handle updating issue
  * @param {Request} req Request Object
  * @param {Response} res Response Object
  */
-const updateIssue = async (req, res) => {
-  const { id } = req.params;
+const updateIssueController = async function (req, res) {
   const { id: userId } = req.user;
-  const { title, description } = req.body;
+  let { title, description } = req.body;
   try {
-    const issue = await issueService.getIssueById(id);
+    const issue = await getIssueById(req.params.id);
     if (issue) {
       if (issue.createdBy.toString() !== userId) {
         return res
           .status(403)
           .send(new Error("FORBIDDEN", "Action not allowed"));
       }
-      issue.title = title;
-      issue.description = description;
+
+      title = title?.trim();
+      description = description?.trim();
+      if (!title && !description) {
+        return res
+          .status(400)
+          .send(new Error("BAD_REQUEST", "Please provide some data"));
+      }
+
+      issue.title = title || issue.title;
+      issue.description = description || issue.description;
       issue.isEdited = true;
+
       await issue.save();
       res.status(200).json({
         code: "OK",
@@ -275,19 +298,21 @@ const updateIssue = async (req, res) => {
  * @param {Request} req Request Object
  * @param {Response} res Response Object
  */
-const toggleResolveStatus = async (req, res) => {
+const toggleResolveStatusController = async function (req, res) {
   let issue = null;
   const { id, role } = req.user;
   try {
-    issue = await issueService.getIssueById(req.params.id);
+    issue = await getIssueById(req.params.id);
     if (issue) {
-      if (issue.createdBy.toString() === id || role === "student_moderator") {
+      if (issue.createdBy.toString() === id || role === "moderator") {
         issue.isResolved = !issue.isResolved;
         await issue.save();
         res.status(200).json({
           code: "OK",
           result: "SUCCESS",
-          message: "Resolve status updated",
+          message: issue.isResolved
+            ? "Issue marked as resolved"
+            : "Issue marked as unresolved",
         });
       } else {
         res.status(403).send(new Error("FORBIDDEN", "Action not allowed"));
@@ -301,18 +326,17 @@ const toggleResolveStatus = async (req, res) => {
 };
 
 /**
- * Controller to delete upvote
+ * Controller to toggle upvote
  * @param {Request} req Request Object
  * @param {Response} res Response Object
  */
-const toggleUpvote = async (req, res) => {
+const toggleUpvoteController = async function (req, res) {
   let issue = null;
-  const { id } = req.params;
   const { department, id: userId } = req.user;
   try {
-    issue = await issueService.getIssueById(id);
+    issue = await getIssueById(req.params.id);
     if (issue) {
-      if (department !== issue.department && issue.scope !== "INSTITUTE")
+      if (department !== issue.department && issue.scope !== "ORGANIZATION")
         return res
           .status(403)
           .send(new Error("FORBIDDEN", "Action not allowed"));
@@ -328,6 +352,7 @@ const toggleUpvote = async (req, res) => {
           (id) => id.toString() !== userId
         );
       }
+
       await issue.save();
       res.status(200).json({
         code: "OK",
@@ -349,13 +374,12 @@ const toggleUpvote = async (req, res) => {
  * @param {Request} req Request Object
  * @param {Response} res Response Object
  */
-const toggleInappropriate = async (req, res) => {
-  const { id } = req.params;
+const toggleInappropriateController = async function (req, res) {
   const { id: userId, department, role } = req.user;
   let userReported = false;
 
   try {
-    const issue = await issueService.getIssueById(id);
+    const issue = await getIssueById(req.params.id);
     if (issue) {
       if (
         issue.department === department ||
@@ -409,23 +433,28 @@ const toggleInappropriate = async (req, res) => {
 };
 
 /**
- * Controller to post a comment on the issue
+ * Controller to handle post comment on issue
  * @param {Request} req Request Object
  * @param {Response} res Response Object
  */
-const postComment = async (req, res) => {
+const postCommentController = async function (req, res) {
   let issue = null;
-  const { comment } = req.body;
   const { id, department } = req.user;
   try {
-    issue = await issueService.getIssueById(req.params.id);
+    issue = await getIssueById(req.params.id);
     if (issue) {
-      // If the issue is not GLOBAL & user is not of the same dept, return
-      // error
-      if (department !== issue.department && issue.scope !== "INSTITUTE")
+      if (department !== issue.department && issue.scope !== "ORGANIZATION")
         res.status(403).send(new Error("FORBIDDEN", "Action not allowed"));
       else {
-        issue.comments.push({ comment, postedBy: id });
+        const { comment } = req.body;
+        if (!comment?.trim()) {
+          return res
+            .status(400)
+            .send(
+              new Error("BAD_REQUEST", "Please provide a valid comment String")
+            );
+        }
+        issue.comments.push({ comment: comment.trim(), postedBy: id });
         await issue.save();
         res.status(200).json({
           code: "OK",
@@ -442,24 +471,29 @@ const postComment = async (req, res) => {
 };
 
 /**
- * Controller to post a solution on the issue
+ * Controller to handle post solution on issue
  * @param {Request} req Request Object
  * @param {Response} res Response Object
  */
-const postSolution = async (req, res) => {
+const postSolutionController = async function (req, res) {
   let issue = null;
   const { solution } = req.body;
+  if (!solution?.trim()) {
+    return res
+      .status(400)
+      .send(new Error("BAD_REQUEST", "Please provide a valid solution string"));
+  }
   const { id, role, department } = req.user;
   try {
-    issue = await issueService.getIssueById(req.params.id);
+    issue = await getIssueById(req.params.id);
     if (issue) {
       if (
-        ["student", "student_moderator"].includes(role) ||
+        ["user", "moderator"].includes(role) ||
         (role === "auth_level_one" && department !== issue.department)
       )
         res.status(403).send(new Error("FORBIDDEN", "Action not allowed"));
       else {
-        issue.solution.push({ solution, postedBy: id });
+        issue.solutions.push({ solution: solution.trim(), postedBy: id });
         await issue.save();
         res.status(200).json({
           code: "OK",
@@ -480,13 +514,13 @@ const postSolution = async (req, res) => {
  * @param {Request} req Request Object
  * @param {Response} res Response Object
  */
-const deleteIssue = async (req, res) => {
+const deleteIssueController = async function (req, res) {
   let issue = null;
   const { role, id } = req.user;
   try {
-    issue = await issueService.getIssueById(req.params.id);
+    issue = await getIssueById(req.params.id);
     if (issue) {
-      if (issue.createdBy.toString() === id || role === "student_moderator") {
+      if (issue.createdBy.toString() === id || role === "moderator") {
         issue.isDeleted = true;
         await issue.save();
         res.status(200).json({
@@ -531,52 +565,19 @@ const filterIssueProperties = function (issue, userId) {
   return filteredIssue;
 };
 
-// Validations functions
-
-/**
- * Validates data from user for creating new issue
- * @param {String} title Title of the issue
- * @param {String} description Description of issue
- * @param {String} section Section of issue
- * @param {String} scope Issue scope
- */
-const validateData = (title, description, images, section, scope) => {
-  const schema = Joi.object({
-    title: Joi.string()
-      .regex(/\w+/)
-      .rule({ message: "Please provide a valid title" })
-      .required(),
-    description: Joi.string()
-      .regex(/\w+/)
-      .rule({ message: "Please provide a valid description" })
-      .required(),
-    images: Joi.array().max(3).required(),
-    section: Joi.string()
-      .regex(/\w+/)
-      .rule({ message: "Please provide a valid section" })
-      .required(),
-    scope: Joi.string()
-      .regex(/^INSTITUTE|DEPARTMENT$/)
-      .rule({ message: "Scope must be either 'INSTITUTE' or 'DEPARTMENT'" })
-      .required(),
-  }).options({ abortEarly: false });
-
-  return schema.validate({ title, description, images, section, scope });
-};
-
 module.exports = {
-  getAllIssues,
-  getAllResolvedIssues,
-  getAllUnresolvedIssues,
-  getIssueById,
-  getIssuesByPhrase,
-  saveImages,
-  addIssue,
-  updateIssue,
-  postComment,
-  postSolution,
-  toggleResolveStatus,
-  toggleUpvote,
-  toggleInappropriate,
-  deleteIssue,
+  addIssue: addIssueController,
+  getAllIssues: getAllIssuesController,
+  getAllResolvedIssues: getAllResolvedIssuesController,
+  getAllUnresolvedIssues: getAllUnresolvedIssuesController,
+  getIssueById: getIssueByIdController,
+  getIssuesByPhrase: getIssuesByPhraseController,
+  saveImagesController,
+  updateIssue: updateIssueController,
+  postComment: postCommentController,
+  postSolution: postSolutionController,
+  toggleResolveStatus: toggleResolveStatusController,
+  toggleUpvote: toggleUpvoteController,
+  toggleInappropriate: toggleInappropriateController,
+  deleteIssue: deleteIssueController,
 };

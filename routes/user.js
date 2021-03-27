@@ -1,19 +1,19 @@
 const router = require("express").Router();
 
-const userService = require("../services/UserService");
+const { allowIfLoggedIn, hasAccessTo } = require("../services/UserService");
 const { saveCsv } = require("../services/FileService");
 
 const {
-  getOwnUserInfo,
   addUser,
   addUsersFromFile,
-  updateOwnUserPassword,
-  updateOwnUserProfile,
-  deleteOwnUserProfile,
-  getUserByUserId,
+  getOwnProfile,
+  getUserById,
   getAllUsers,
-  updateAnyUserProfileByUserId,
-  deleteAnyUserByUserId,
+  updateOwnPassword,
+  updateOwnProfile,
+  updateAnyUserById,
+  deleteOwnProfile,
+  deleteAnyUserById,
 } = require("../controllers/userController");
 
 /*
@@ -22,31 +22,31 @@ const {
  */
 router.get(
   "/",
-  userService.allowIfLoggedIn,
-  userService.hasAccessTo("readOwn", "profile"),
-  async (req, res) => getOwnUserInfo(req, res)
+  allowIfLoggedIn,
+  hasAccessTo("readOwn", "profile"),
+  getOwnProfile
 );
 
 router.post(
   "/add",
-  userService.allowIfLoggedIn,
-  userService.hasAccessTo("createAny", "profile"),
-  async (req, res) => addUser(req, res)
+  allowIfLoggedIn,
+  hasAccessTo("createAny", "profile"),
+  addUser
 );
 
 router.post(
   "/add/bulk",
-  userService.allowIfLoggedIn,
-  userService.hasAccessTo("createAny", "profile"),
+  allowIfLoggedIn,
+  hasAccessTo("createAny", "profile"),
   saveCsv,
   addUsersFromFile
 );
 
 router.patch(
   "/update/password",
-  userService.allowIfLoggedIn,
-  userService.hasAccessTo("updateOwn", "profile"),
-  async (req, res) => updateOwnUserPassword(req, res)
+  allowIfLoggedIn,
+  hasAccessTo("updateOwn", "profile"),
+  updateOwnPassword
 );
 
 /*
@@ -55,9 +55,9 @@ router.patch(
  */
 router.post(
   "/update/profile",
-  userService.allowIfLoggedIn,
-  userService.hasAccessTo("updateOwn", "profile"),
-  async (req, res) => updateOwnUserProfile(req, res)
+  allowIfLoggedIn,
+  hasAccessTo("updateOwn", "profile"),
+  updateOwnProfile
 );
 
 /**
@@ -65,9 +65,9 @@ router.post(
  */
 router.delete(
   "/",
-  userService.allowIfLoggedIn,
-  userService.hasAccessTo("deleteOwn", "profile"),
-  async (req, res) => deleteOwnUserProfile(req, res)
+  allowIfLoggedIn,
+  hasAccessTo("deleteOwn", "profile"),
+  deleteOwnProfile
 );
 
 /**
@@ -75,9 +75,9 @@ router.delete(
  */
 router.get(
   "/all",
-  userService.allowIfLoggedIn,
-  userService.hasAccessTo("readAny", "profile"),
-  async (req, res) => getAllUsers(req, res)
+  allowIfLoggedIn,
+  hasAccessTo("readAny", "profile"),
+  getAllUsers
 );
 
 /**
@@ -85,9 +85,9 @@ router.get(
  */
 router.get(
   "/:userId",
-  userService.allowIfLoggedIn,
-  userService.hasAccessTo("readAny", "profile"),
-  async (req, res) => getUserByUserId(req, res)
+  allowIfLoggedIn,
+  hasAccessTo("readAny", "profile"),
+  getUserById
 );
 
 /*
@@ -95,9 +95,9 @@ router.get(
  */
 router.post(
   "/update/profile/:userID",
-  userService.allowIfLoggedIn,
-  userService.hasAccessTo("updateAny", "profile"),
-  async (req, res) => updateAnyUserProfileByUserId(req, res)
+  allowIfLoggedIn,
+  hasAccessTo("updateAny", "profile"),
+  updateAnyUserById
 );
 
 /**
@@ -105,9 +105,9 @@ router.post(
  */
 router.delete(
   "/:userID",
-  userService.allowIfLoggedIn,
-  userService.hasAccessTo("deleteAny", "profile"),
-  async (req, res) => deleteAnyUserByUserId(req, res)
+  allowIfLoggedIn,
+  hasAccessTo("deleteAny", "profile"),
+  deleteAnyUserById
 );
 
 module.exports = router;

@@ -8,11 +8,11 @@ const {
 /*
  * ROUTE TO LOGIN AND RETURN ACCESS TOKEN
  */
-router.post("/login", async (req, res) => loginController(req, res));
+router.post("/login", loginController);
 
 /*
  * ROUTE TO REFRESH ACCESS TOKEN
  */
-router.post("/refresh", async (req, res) => refreshTokenController(req, res));
+router.post("/refresh", refreshTokenController);
 
 module.exports = router;

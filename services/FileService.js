@@ -12,7 +12,7 @@ const MAX_IMAGE_COUNT = 3;
 /** Destination for storing images */
 const IMAGE_DESTINATION = "./images";
 
-/** Multer Storage Engine, configured to store files locally */
+/** Multer Storage Engine, configured to store files locally at `IMAGE_DESTINATION` */
 const storage = multer.diskStorage({
   destination: IMAGE_DESTINATION,
   filename: (_, { originalname }, cb) => {
@@ -22,7 +22,7 @@ const storage = multer.diskStorage({
 
 /**
  * Express middleware for storing images on local storage. Saves at max
- * `maxImages` files
+ * `MAX_IMAGE_COUNT` files
  */
 const saveImages = multer({
   storage: storage,

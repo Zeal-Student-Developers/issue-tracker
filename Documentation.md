@@ -60,9 +60,9 @@ _Error reporting format_:
 statusCode: [401, 403, 500]
 
 {
-  "code": [Error code],
+  "code": "<Error code>",
   "result": "FAILURE",
-  "message": [Error message],
+  "message": "<Error message>",
 }
 ```
 
@@ -89,8 +89,8 @@ _All the requests must send the data in_ `application/JSON` _format only_.
 
 ```JSON
 {
-  "zprn": [zprn],
-  "password": [password],
+  "zprn": "<zprn>",
+  "password": "<password>",
 }
 ```
 - zprn should be exactly 7 characters long, and in `Integer` format.
@@ -103,8 +103,8 @@ statusCode: 200
 {
   "code": "OK",
   "result": "SUCCESS",
-  "token": [generated JWT token],
-  "refreshToken": [generated refresh token token],
+  "token": "<generated JWT token>",
+  "refreshToken": "<generated refresh token token>",
 }
 ```
 - The JWT token expires in a predefined amount of time.
@@ -123,7 +123,7 @@ statusCode: 200
 **Required parameters**:
 ```JSON
 {
-  "refreshToken": [refresh token provided at login]
+  "refreshToken": "<refresh token provided at login>"
 }
 ```
 >**Note:** The request must contain the expired JWT token in the `authorization` header as `'Bearer [the JWT token]`.
@@ -135,7 +135,7 @@ statusCode: 200
 {
   "code": "OK",
   "result": "SUCCESS",
-  "token": [generated JWT token]
+  "token": "<generated JWT token>"
 }
 ```
 
@@ -172,12 +172,12 @@ The following details about the user are returned:
 **Required parameters**:
 ```JSON
 {
-  "zprn":[user's zprn],
-  "firstName":[user's first name],
-  "lastName":[user's last name],
-  "password":[user's password],
-  "department":[user's department],
-  "role":[user's role],
+  "zprn": "<user's zprn>",
+  "firstName": "<user's first name>",
+  "lastName": "<user's last name>",
+  "password": "<user's password>",
+  "department": "<user's department>",
+  "role": "<user's role>",
 }
 ```
 - zprn must be exactly 7 characters long, in `Integer` format.
@@ -191,8 +191,8 @@ statusCode: 201
 
 {
   "code": "CREATED",
-  "msg": "User added!",
   "result": "SUCCESS",
+  "message": "User added",
 }
 ```
 
@@ -273,7 +273,7 @@ statusCode: 200
 {
   "code": "OK",
   "result": "SUCCESS",
-  "user": [List of users],
+  "user": "[List of users]",
 }
 ```
 
@@ -298,10 +298,10 @@ statusCode: 200
   "code": "OK",
   "result": "SUCCESS",
   "user": {
-    "zprn": [user's zprn],
-    "firstName": [user's first name],
-    "lastName": [user's last name],
-    "department": [user's department],
+    "zprn": "<user's zprn>",
+    "firstName": "<user's first name>",
+    "lastName": "<user's last name>",
+    "department": "<user's department>",
   }
 }
 ```
@@ -327,11 +327,11 @@ statusCode: 200
   "code": "OK",
   "result": "SUCCESS",
   "user": {
-    "zprn": [user's zprn],
-    "firstName": [user's first name],
-    "lastName": [user's last name],
-    "department": [user's department],
-    "role": [user's role],
+    "zprn": "<user's zprn>",
+    "firstName": "<user's first name>",
+    "lastName": "<user's last name>",
+    "department": "<user's department>",
+    "role": "<user's role>",
   }
 }
 ```
@@ -352,8 +352,8 @@ statusCode: 200
 **Required parameters**:
 ```JSON
 {
-  "oldPassword": [user's current password],
-  "newPassword": [user's updated password].
+  "oldPassword": "<user's current password>",
+  "newPassword": "<user's updated password>".
 }
 ```
 - oldPassword must not be the same as the newPassword.
@@ -366,7 +366,7 @@ statusCode: 200
 {
   "code": "OK",
   "result": "SUCCESS",
-  "msg": "Password updated!",
+  "message": "Password updated",
 }
 ```
 
@@ -384,9 +384,9 @@ statusCode: 200
 **Required parameters**:
 ```JSON
 {
-  "firstName":[updated firstName],
-  "lastName":[updated lastName],
-  "department":[updated department],
+  "firstName":"<updated firstName>",
+  "lastName":"<updated lastName>",
+  "department":"<updated department>",
 }
 ```
 >**Note**: The currently logged in user can only update their firstName, lastName & department. Only those fields must be passed that are updated, rest must be left undefined.
@@ -398,7 +398,7 @@ statusCode: 200
 {
   "code": "OK",
   "result": "SUCCESS",
-  "msg": "User updated!"
+  "message": "User updated"
 }
 ```
 **[⬆Back to index](#index)**
@@ -415,11 +415,11 @@ statusCode: 200
 **Required parameters**:
 ```JSON
 {
-  "firstName": [user's first name],
-  "lastName": [user's last name],
-  "password": [user's password],
-  "department": [user's department],
-  "role": [user's role],
+  "firstName": "<user's first name>",
+  "lastName": "<user's last name>",
+  "password": "<user's password>",
+  "department": "<user's department>",
+  "role": "<user's role>",
 }
 ```
 **Note:** Fields that are not updated, must not be defined.
@@ -431,7 +431,7 @@ statusCode: 200
 {
   "code": "OK",
   "result": "SUCCESS",
-  "msg": "User updated!",
+  "message": "User updated",
 }
 ```
 **[⬆Back to index](#index)**
@@ -458,7 +458,7 @@ statusCode: 200
 {
   "code": "OK",
   "result": "SUCCESS",
-  "deleted": [deleted user],
+  "deleted": "<deleted user>",
 }
 ```
 **[⬆Back to index](#index)**
@@ -479,7 +479,7 @@ _Successful Response format_:
 {
   "code": "OK",
   "result": "SUCCESS",
-  "msg": "User deleted.",
+  "message": "User deleted",
 }
 ```
 **[⬆Back to index](#index)**
@@ -571,7 +571,7 @@ statusCode : 200
 {
   "code": "OK",
   "result": "SUCCESS",
-  "issues":[List of Issues],
+  "issues":"[List of Issues]",
 }
 ```
 **[⬆Back to index](#index)**
@@ -593,7 +593,7 @@ statusCode : 200
 {
   "code": "OK",
   "result": "SUCCESS",
-  "issues": [List of issues],
+  "issues": "[List of issues]",
 }
 ```
 **[⬆Back to index](#index)**
@@ -615,7 +615,7 @@ statusCode : 200
 {
   "code": "OK",
   "result": "SUCCESS",
-  "issues": [List of issues],
+  "issues": "[List of issues]",
 }
 ```
 **[⬆Back to index](#index)**
@@ -659,7 +659,7 @@ statusCode : 200
 {
   "code": "OK",
   "result": "SUCCESS",
-  "issue": [issue]
+  "issue": "[issue]"
 }
 ```
 **[⬆Back to index](#index)**
@@ -685,7 +685,7 @@ statusCode : 200
 }
 ```
 **[⬆Back to index](#index)**
-]**Note:** Only the student who created the issue or user with role `student_moderator` can toggle issue resolve status.
+> **Note:** Only the student who created the issue or user with role `student_moderator` can toggle issue resolve status.
 
 
 #### Post a comment on issue
@@ -698,7 +698,7 @@ statusCode : 200
 **Required parameters**: `id` of the issue in the request URL itself.
 ```JSON
 {
-  "comment":[comment]
+  "comment":"<comment>"
 }
 ```
 - `comment` must be `String` format.
@@ -724,7 +724,7 @@ statusCode : 200
 **Required parameters**: `id` of the issue in the request URL itself.
 ```JSON
 {
-  "solution":[solution]
+  "solution":"<solution>"
 }
 ```
 - `solution` must be `String` format.

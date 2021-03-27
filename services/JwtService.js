@@ -1,74 +1,52 @@
 const jwt = require("jsonwebtoken");
+const { validateToken, validatePayload } = require("../misc/validation/jwt");
 
 class JwtService {
   constructor() {}
 
   /**
    * Create a signed JWT token.
-   * @param payload The payload object for the JWT token.
-   * @returns Signed JWT token.
+   * @param {Object} payload The payload object for the JWT token.
+   * @returns {String} Signed JWT token.
    */
   sign(payload) {
-    if (
-      payload === null ||
-      payload === undefined ||
-      Object.keys(payload).length === 0
-    ) {
-      throw new Error(
-        "Payload must be a valid object with one or more properties."
-      );
+    const error = validatePayload(payload);
+    if (error) {
+      throw new Error(error);
     } else {
-      try {
-        return jwt.sign(payload, process.env.SECRET, {
-          expiresIn: process.env.TOKEN_LIFE,
-        });
-      } catch (error) {
-        throw error;
-      }
+      return jwt.sign(payload, process.env.SECRET, {
+        expiresIn: process.env.TOKEN_LIFE,
+      });
     }
   }
 
   /**
    * Verify the passed JWT token.
-   * @param authHeader The authorization header of the request containing the JWT token.
+   * @param {String} authHeader The authorization header of the request containing the JWT token.
    * @returns Decoded payload object if the JWT token is valid, else throws an error.
    */
   verify(authHeader) {
-    if (
-      authHeader === null ||
-      authHeader === undefined ||
-      !/^(Bearer )[\w\-\.]{84,}$/.test(authHeader)
-    ) {
-      throw new Error("Authorization header must contain a valid JWT token.");
+    const error = validateToken(authHeader);
+    if (error) {
+      throw new Error(error);
     } else {
       const token = authHeader.split(" ")[1];
-      try {
-        return jwt.verify(token, process.env.SECRET);
-      } catch (error) {
-        throw error;
-      }
+      return jwt.verify(token, process.env.SECRET);
     }
   }
 
   /**
    * Decode the passed JWT token.
-   * @param authHeader The authorization header of the request containing the JWT token.
+   * @param {String} authHeader The authorization header of the request containing the JWT token.
    * @returns Decoded payload object passed at the time of creation of the token.
    */
   decode(authHeader) {
-    if (
-      authHeader === null ||
-      authHeader === undefined ||
-      !RegExp("^(Bearer )[\\w\\.]{84,}$").test(authHeader)
-    ) {
-      throw new Error("Authorization header must contain a valid JWT token.");
+    const error = validateToken(authHeader);
+    if (error) {
+      throw new Error(error);
     } else {
       const token = authHeader.split(" ")[1];
-      try {
-        return jwt.decode(token);
-      } catch (error) {
-        throw error;
-      }
+      return jwt.decode(token);
     }
   }
 }

@@ -3,125 +3,102 @@ const randomBytes = require("crypto").randomBytes;
 const Error = require("../models/Error");
 const { roles } = require("../models/roles");
 
+/**
+ * Class for handling CRUD operations on `users`
+ */
 class UserService {
   constructor() {}
 
-  // ADD USER
-  async addUser(zprn, firstName, lastName, password, department, role) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const user = new User({
-          zprn: Number(zprn),
-          role: role,
-          firstName: firstName,
-          lastName: lastName,
-          department: department,
-          password: password,
-          role: role,
-          isDisabled: false,
-          refreshToken: randomBytes(45).toString("hex") + "." + zprn,
-        });
-        const newUser = await user.save();
-        return resolve(newUser);
-      } catch (error) {
-        return reject(error);
-      }
-    });
-  }
-
-  // FIND ALL USERS
-  async getAllUsers() {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const users = await User.find({ isDisabled: false });
-        return resolve(users);
-      } catch (error) {
-        return reject(error);
-      }
-    });
-  }
-
-  // FIND USER WITH ZPRN
-  async getUserByZprn(zprn) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const user = await User.findOne({
-          zprn: zprn,
-          isDisabled: false,
-        });
-        return resolve(user);
-      } catch (error) {
-        return reject(error);
-      }
+  /**
+   * Creates new user with the provided data
+   * @param {String} userId userId of the user
+   * @param {String} firstName First name of the user
+   * @param {String} lastName Last name of the user
+   * @param {String} password Password of the user
+   * @param {String} department Department of the user
+   * @param {String} role User's role
+   * @returns {Promise<Document>} Newly created user
+   */
+  async createUser(userId, firstName, lastName, password, department, role) {
+    return await User.create({
+      userId,
+      role,
+      firstName,
+      lastName,
+      department,
+      password,
+      role,
+      isDisabled: false,
+      refreshToken: randomBytes(45).toString("hex") + "." + userId,
     });
   }
 
   /**
+   * Gets all the users in database
+   * @returns {Promise<Document[]>} List of all users
+   */
+  async getAllUsers() {
+    return await User.find({ isDisabled: false });
+  }
+
+  /**
+   * Get user with specified `userId`
+   * @param {String} userId userId of the user
+   * @returns {Promise<Document>} User with given userId
+   */
+  async getUserByUserId(userId) {
+    return await User.findOne({ userId });
+  }
+
+  /**
    * Get user with ID
-   * @param {String} id ID of the user
-   * @returns User with specified ID
+   * @param {String} id Document ID of the user
+   * @returns {Promise<Document>} User with specified ID
    */
   async getUserById(id) {
     return await User.findById(id);
   }
 
-  // UPDATE USER
-  /*
-   * 'newUser' is the object containing updated details of the user.
-   * The fields that aren't to be updated should be left undefined
+  /**
+   * Updates the specified with provided details
+   * @param {Object} newUser Object containing updated user details
+   * @returns {Promise<Document>} Updated user object
    */
   async updateUser(newUser) {
-    return new Promise(async (resolve, reject) => {
-      const { id, firstName, lastName, password, department, role } = newUser;
-      try {
-        const user = await User.findById(id);
-        if (user == null) {
-          return reject(new Error("BAD_REQUEST", "No user found"));
-        } else {
-          user.firstName = firstName != undefined ? firstName : user.firstName;
-          user.lastName = lastName != undefined ? lastName : user.lastName;
-          user.password = password != undefined ? password : user.password;
-          user.department =
-            department != undefined ? department : user.department;
-          user.role = role != undefined ? role : user.role;
-          const result = await user.save();
-          return resolve(result);
-        }
-      } catch (error) {
-        return reject(error);
-      }
-    });
+    const { id, firstName, lastName, password, department, role } = newUser;
+    const user = await User.findById(id);
+    if (user === null) {
+      throw new Error("BAD_REQUEST", "No user found");
+    } else {
+      user.firstName = firstName || user.firstName;
+      user.lastName = lastName || user.lastName;
+      user.password = password || user.password;
+      user.department = department || user.department;
+      user.role = role || user.role;
+    }
+
+    return await user.save();
   }
 
+  /**
+   * Deletes all users from the database
+   * @returns {Promise<Number} Number of deleted users
+   */
   async deleteAllUsers() {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const result = await User.updateMany(
-          {},
-          {
-            isDisabled: true,
-          }
-        );
-        return resolve(result.nModified);
-      } catch (error) {
-        return reject(error);
-      }
-    });
+    return (await User.updateMany(null, { isDisabled: true })).nModified;
   }
 
+  /**
+   * Deletes user with specified ID
+   * @param {String} id ID of the user to delete
+   * @returns {Promise<Document>} Deleted user object
+   */
   async deleteUser(id) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const user = await User.findOneAndUpdate(
-          { _id: id },
-          { isDisabled: true },
-          { new: true }
-        );
-        return resolve(user);
-      } catch (error) {
-        return reject(error);
-      }
-    });
+    return await User.findByIdAndUpdate(
+      id,
+      { isDisabled: true },
+      { new: true }
+    );
   }
 
   /**

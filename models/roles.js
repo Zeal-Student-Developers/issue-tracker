@@ -2,7 +2,7 @@ const AccessControl = require("accesscontrol");
 const ac = new AccessControl();
 
 exports.roles = (() => {
-  ac.grant("student")
+  ac.grant("user")
     .readOwn("profile")
     .updateOwn("profile")
     .deleteOwn("profile")
@@ -13,10 +13,7 @@ exports.roles = (() => {
     .deleteOwn("issue")
     .createAny("comment");
 
-  ac.grant("student_moderator")
-    .extend("student")
-    .updateAny("issue")
-    .updateAny("profile");
+  ac.grant("moderator").extend("user").updateAny("issue").updateAny("profile");
 
   ac.grant("auth_level_one")
     .readOwn("profile")

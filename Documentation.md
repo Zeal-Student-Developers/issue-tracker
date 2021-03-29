@@ -12,6 +12,7 @@
     - [User Resource](#user-resource)
     - [Creating Users](#creating-users)
       - [Create user profile](#create-user-profile)
+      - [Creating user profiles from CSV file:](#creating-user-profiles-from-csv-file)
     - [Getting Users](#getting-users)
       - [Get all user profiles](#get-all-user-profiles)
       - [Get currently logged in user profile](#get-currently-logged-in-user-profile)
@@ -23,6 +24,7 @@
     - [Deleting Users](#deleting-users)
       - [Delete user profile](#delete-user-profile)
       - [Deleting current user's profile](#deleting-current-users-profile)
+    - [Blocked Users](#blocked-users)
   - [Issues](#issues)
     - [Creating Issues](#creating-issues)
       - [Create Issue](#create-issue)
@@ -31,9 +33,9 @@
       - [Get all issues](#get-all-issues)
       - [Get all resolved issues](#get-all-resolved-issues)
       - [Get all unresolved issues](#get-all-unresolved-issues)
-      - [Get issues by phrase](#get-issues-by-phrase)
+      - [Get issues by phrase:](#get-issues-by-phrase)
       - [Get issue by ID](#get-issue-by-id)
-    - [Updating an issue](#updating-an-issue)
+    - [Updating issue](#updating-issue)
       - [Toggle issue resolve status](#toggle-issue-resolve-status)
       - [Post a comment on issue](#post-a-comment-on-issue)
       - [Post a solution on issue](#post-a-solution-on-issue)
@@ -483,6 +485,20 @@ _Successful Response format_:
 }
 ```
 **[⬆Back to index](#index)**
+
+### Blocked Users
+
+Users who repeatedly violate the Code of Conduct may be blocked by the system. The current limit set for Code of Conduct violations is set to `5`. Blocked users are restricted from accessing any of the API endpoints. On recieving a request from a blocked user on any endpoint, the API would respond with
+```JSON
+statusCode : 403
+
+{
+  "code": "FORBIDDEN",
+  "result": "FAILURE",
+  "message": "You have been blocked by the system for repeated violations of the Code of Conduct"
+}
+
+```
 
 ---
 ## Issues

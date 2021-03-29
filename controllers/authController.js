@@ -21,6 +21,16 @@ const loginController = async (req, res) => {
       if (!user) {
         res.status(400).send(new Error("BAD_REQUEST", "No user found"));
       } else {
+        if (user.isDisabled) {
+          return res
+            .status(403)
+            .send(
+              new Error(
+                "FORBIDDEN",
+                "You have been blocked by the system for repeated violations of the Code of Conduct"
+              )
+            );
+        }
         const match = bcrypt.compareSync(password, user.password);
         if (match) {
           let token = null;
@@ -69,6 +79,16 @@ const refreshTokenController = async (req, res) => {
     if (!user) {
       res.send(401).send(new Error("BAD_REQUEST", "No user found"));
     } else {
+      if (user.isDisabled) {
+        return res
+          .status(403)
+          .send(
+            new Error(
+              "FORBIDDEN",
+              "You have been blocked by the system for repeated violations of the Code of Conduct"
+            )
+          );
+      }
       if (user.refreshToken === req.body.refreshToken) {
         const token = sign({
           userID: userID,

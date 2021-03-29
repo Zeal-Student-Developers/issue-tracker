@@ -129,6 +129,17 @@ class UserService {
   hasAccessTo = (act, resource) => {
     return async (req, res, next) => {
       try {
+        if (req.user.isDisabled) {
+          return res
+            .status(403)
+            .send(
+              new Error(
+                "FORBIDDEN",
+                "You have been blocked by the system for repeated violations of the Code of Conduct"
+              )
+            );
+        }
+
         const perm = roles.can(req.user.role)[act](resource);
         if (!perm.granted) {
           return res

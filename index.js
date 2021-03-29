@@ -4,12 +4,13 @@ const mongoose = require("mongoose");
 const JwtService = require("./services/JwtService");
 const UserService = require("./services/UserService");
 const Error = require("./models/Error");
-require("dotenv").config();
+
+const { MONGO } = require("./config");
 
 app.use(express.json());
 
 mongoose
-  .connect(process.env.MONGO, {
+  .connect(MONGO, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true,

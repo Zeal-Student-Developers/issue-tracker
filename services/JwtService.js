@@ -1,6 +1,8 @@
 const jwt = require("jsonwebtoken");
 const { validateToken, validatePayload } = require("../misc/validation/jwt");
 
+const { TOKEN_LIFE, JWT_SECRET } = require("../config");
+
 class JwtService {
   constructor() {}
 
@@ -14,8 +16,8 @@ class JwtService {
     if (error) {
       throw new Error(error);
     } else {
-      return jwt.sign(payload, process.env.SECRET, {
-        expiresIn: process.env.TOKEN_LIFE,
+      return jwt.sign(payload, JWT_SECRET, {
+        expiresIn: TOKEN_LIFE,
       });
     }
   }
@@ -31,7 +33,7 @@ class JwtService {
       throw new Error(error);
     } else {
       const token = authHeader.split(" ")[1];
-      return jwt.verify(token, process.env.SECRET);
+      return jwt.verify(token, JWT_SECRET);
     }
   }
 

@@ -11,6 +11,8 @@ const Image = require("../models/Image");
 const { uploadImages, updateImageIssueId } = require("../services/FileService");
 const { validateUserData } = require("../misc/validation/issueController");
 
+const { FILE_SERVER_URI } = require("../config");
+
 /** Threshold value for reports count on an issue  */
 const ISSUE_REPORTS_THRESHOLD = 75;
 /** Threshold value for code of conduct violations by users  */
@@ -176,6 +178,7 @@ const getIssuesByPhraseController = async function (req, res) {
  */
 const saveImagesController = async function (req, res) {
   const files = req.files;
+  console.log(files);
   const { id } = req.user;
   if (files.length === 0) {
     return res
@@ -187,7 +190,7 @@ const saveImagesController = async function (req, res) {
     if (data) {
       const paths = [];
       data.files.forEach(async (file) => {
-        const path = `${process.env.FILE_SERVER_URI}/${file.path}`;
+        const path = `${FILE_SERVER_URI}/${file.path}`;
         paths.push(path);
 
         await Image.create({

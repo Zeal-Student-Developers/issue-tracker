@@ -4,9 +4,7 @@ const { verify } = require("../services/JwtService");
 const { getUserById } = require("../services/UserService");
 const Error = require("../models/Error");
 
-const authRoutes = require("../routes/auth");
-const userRoutes = require("../routes/user");
-const issueRoutes = require("../routes/issue");
+const { authRoutes, userRoutes, issueRoutes } = require("../routes");
 
 /**
  * Express middleware to verify the JWT token passed in the `authorization`
@@ -36,9 +34,11 @@ const getExpressApp = function () {
   const app = Express();
 
   app.use(Express.json());
-  app.use(loadUser);
 
   app.use("/api/auth/", authRoutes);
+
+  // For auth routes, no need to load user
+  app.use(loadUser);
   app.use("/api/users/", userRoutes);
   app.use("/api/issues/", issueRoutes);
 

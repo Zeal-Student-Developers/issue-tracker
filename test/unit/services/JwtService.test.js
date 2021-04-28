@@ -2,7 +2,7 @@ const chai = require("chai");
 const expect = chai.expect;
 const sinon = require("sinon");
 
-const JwtService = require("../../../services/JwtService");
+const { JwtService } = require("../../../services");
 const jwt = require("jsonwebtoken");
 
 describe("JwtService", () => {

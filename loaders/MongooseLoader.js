@@ -1,12 +1,12 @@
 const { connect, Connection } = require("mongoose");
-const { MONGO } = require("../config");
+const { MONGO, ENV, MONGO_TEST } = require("../config");
 
 /**
  * Creates a connection with MongoDB database
  * @returns {Connection} A connection to MongoDB database
  */
 const getDatabaseConnection = async function () {
-  const { connection } = await connect(MONGO, {
+  const { connection } = await connect(ENV === "test" ? MONGO_TEST : MONGO, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true,

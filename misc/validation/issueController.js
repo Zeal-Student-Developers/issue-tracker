@@ -7,7 +7,7 @@ const Joi = require("@hapi/joi");
  * @param {String} section Section of issue
  * @param {String} scope Issue scope
  */
-const validateUserData = (title, description, images, section, scope) => {
+const validateIssueData = (title, description, images, section, scope) => {
   const schema = Joi.object({
     title: Joi.string()
       .regex(/\w+/)
@@ -45,4 +45,4 @@ const validateUserData = (title, description, images, section, scope) => {
   return undefined;
 };
 
-module.exports = { validateUserData };
+module.exports = { validateIssueData };

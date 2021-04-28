@@ -1,9 +1,8 @@
 const router = require("express").Router();
 
 const {
-  loginController,
-  refreshTokenController,
-} = require("../controllers/authController");
+  authController: { loginController, refreshTokenController },
+} = require("../controllers");
 
 /*
  * ROUTE TO LOGIN AND RETURN ACCESS TOKEN

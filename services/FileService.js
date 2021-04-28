@@ -7,7 +7,7 @@ const { randomBytes } = require("crypto");
 
 const { FILE_SERVER_URI } = require("../config");
 
-const Image = require("../models/Image");
+const { Image } = require("../models");
 
 /** Maximum image count */
 const MAX_IMAGE_COUNT = 3;

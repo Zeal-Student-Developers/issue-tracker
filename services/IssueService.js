@@ -1,4 +1,4 @@
-const Issue = require("../models/Issue");
+const { Issue } = require("../models");
 
 /**
  * Class for performing CRUD operations on Issues.

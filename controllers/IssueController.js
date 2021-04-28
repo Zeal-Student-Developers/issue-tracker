@@ -1,15 +1,18 @@
 const {
-  getIssueById,
-  getAllIssues,
-  getAllIssuesByDepartment,
-  getAllIssuesByPhrase,
-  createIssue,
-} = require("../services/IssueService");
-const { getUserById } = require("../services/UserService");
-const Error = require("../models/Error");
-const Image = require("../models/Image");
-const { uploadImages, updateImageIssueId } = require("../services/FileService");
-const { validateUserData } = require("../misc/validation/issueController");
+  IssueService: {
+    getIssueById,
+    getAllIssues,
+    getAllIssuesByDepartment,
+    getAllIssuesByPhrase,
+    createIssue,
+  },
+  UserService: { getUserById },
+  FileService: { uploadImages, updateImageIssueId },
+} = require("../services");
+const { Error, Image } = require("../models");
+const {
+  issueValidations: { validateIssueData },
+} = require("../misc/validation");
 
 const { FILE_SERVER_URI } = require("../config");
 
@@ -226,7 +229,13 @@ const addIssueController = async function (req, res) {
   const { title, description, images, section, scope } = req.body;
   const { department, id } = req.user;
   try {
-    const errors = validateUserData(title, description, images, section, scope);
+    const errors = validateIssueData(
+      title,
+      description,
+      images,
+      section,
+      scope
+    );
     if (errors) {
       res.status(400).send(new Error("BAD_REQUEST", errors));
     } else {

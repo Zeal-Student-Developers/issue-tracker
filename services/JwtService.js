@@ -1,5 +1,7 @@
 const jwt = require("jsonwebtoken");
-const { validateToken, validatePayload } = require("../misc/validation/jwt");
+const {
+  jwtValidations: { validateToken, validatePayload },
+} = require("../misc/validation");
 
 const { TOKEN_LIFE, JWT_SECRET } = require("../config");
 

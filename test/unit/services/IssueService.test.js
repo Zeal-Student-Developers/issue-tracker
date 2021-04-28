@@ -1,8 +1,8 @@
 const { expect } = require("chai");
 const { stub } = require("sinon");
 
-const Issue = require("../../../models/Issue");
-const issueService = require("../../../services/IssueService");
+const { Issue } = require("../../../models");
+const { IssueService: issueService } = require("../../../services");
 
 describe("IssueService", () => {
   // Todo: Add tests for getAllIssues() & getAllIssuesByDepartment()

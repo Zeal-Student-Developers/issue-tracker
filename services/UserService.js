@@ -1,7 +1,9 @@
-const User = require("../models/User");
 const randomBytes = require("crypto").randomBytes;
-const Error = require("../models/Error");
-const { roles } = require("../models/roles");
+const {
+  roles: { roles },
+  Error,
+  User,
+} = require("../models");
 
 /**
  * Class for handling CRUD operations on `users`

@@ -2,8 +2,8 @@ const chai = require("chai");
 const expect = chai.expect;
 const sinon = require("sinon");
 
-const UserService = require("../../../services/UserService");
-const User = require("../../../models/User");
+const { UserService } = require("../../../services");
+const { User } = require("../../../models");
 const AccessControl = require("accesscontrol");
 
 describe("UserService", () => {

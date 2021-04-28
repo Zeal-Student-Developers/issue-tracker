@@ -1,9 +1,15 @@
 const bcrypt = require("bcryptjs");
 
-const Error = require("../models/Error");
-const { sign, decode } = require("../services/JwtService");
-const { getUserByUserId, getUserById } = require("../services/UserService");
-const { validateCredentials } = require("../misc/validation/authController");
+const { Error } = require("../models");
+
+const {
+  UserService: { getUserByUserId, getUserById },
+  JwtService: { sign, decode },
+} = require("../services");
+
+const {
+  authValidations: { validateCredentials },
+} = require("../misc/validation");
 
 /**
  * Controller for handling login
@@ -106,7 +112,7 @@ const refreshTokenController = async (req, res) => {
       }
     }
   } catch (error) {
-    res.send(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
+    res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
   }
 };
 

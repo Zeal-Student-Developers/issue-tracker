@@ -2,19 +2,19 @@ const bcrypt = require("bcryptjs");
 const { readFileSync, unlinkSync } = require("fs");
 const { parse } = require("papaparse");
 
+const { Error } = require("../models");
+
 const {
-  getUserById,
-  getAllUsers,
-  createUser,
-  updateUser,
-  deleteUser,
-} = require("../services/UserService");
+  UserService: { getUserById, getAllUsers, createUser, updateUser, deleteUser },
+} = require("../services");
+
 const {
-  validateUserData,
-  validatePasswords,
-  validateUpdateUserData,
-} = require("../misc/validation/userController");
-const Error = require("../models/Error");
+  userValidations: {
+    validateUserData,
+    validatePasswords,
+    validateUpdateUserData,
+  },
+} = require("../misc/validation");
 
 /**
  * Controller to handle get own profile user

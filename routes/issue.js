@@ -1,22 +1,27 @@
 const router = require("express").Router();
 
 const {
-  getAllIssues,
-  getAllResolvedIssues,
-  getAllUnresolvedIssues,
-  getIssueById,
-  getIssuesByPhrase,
-  saveImagesController,
-  addIssue,
-  toggleResolveStatus,
-  postComment,
-  postSolution,
-  toggleUpvote,
-  toggleInappropriate,
-  deleteIssue,
-} = require("../controllers/IssueController");
-const { allowIfLoggedIn, hasAccessTo } = require("../services/UserService");
-const { saveImages } = require("../services/FileService");
+  issueController: {
+    getAllIssues,
+    getAllResolvedIssues,
+    getAllUnresolvedIssues,
+    getIssueById,
+    getIssuesByPhrase,
+    saveImagesController,
+    addIssue,
+    toggleResolveStatus,
+    postComment,
+    postSolution,
+    toggleUpvote,
+    toggleInappropriate,
+    deleteIssue,
+  },
+} = require("../controllers");
+
+const {
+  UserService: { allowIfLoggedIn, hasAccessTo },
+  FileService: { saveImages },
+} = require("../services");
 
 // Get all issues
 router.get(

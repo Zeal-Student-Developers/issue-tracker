@@ -1,15 +1,20 @@
+const { Error, Image } = require("../models");
+
 const {
-  getIssueById,
-  getAllIssues,
-  getAllIssuesByDepartment,
-  getAllIssuesByPhrase,
-  createIssue,
-} = require("../services/IssueService");
-const { getUserById } = require("../services/UserService");
-const Error = require("../models/Error");
-const Image = require("../models/Image");
-const { uploadImages, updateImageIssueId } = require("../services/FileService");
-const { validateUserData } = require("../misc/validation/issueController");
+  IssueService: {
+    getIssueById,
+    getAllIssues,
+    getAllIssuesByDepartment,
+    getAllIssuesByPhrase,
+    createIssue,
+  },
+  FileService: { uploadImages, updateImageIssueId },
+  UserService: { getUserById },
+} = require("../services");
+
+const {
+  issueValidations: { validateUserData },
+} = require("../misc/validation");
 
 /** Threshold value for reports count on an issue  */
 const ISSUE_REPORTS_THRESHOLD = 75;

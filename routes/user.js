@@ -1,20 +1,24 @@
 const router = require("express").Router();
 
-const { allowIfLoggedIn, hasAccessTo } = require("../services/UserService");
-const { saveCsv } = require("../services/FileService");
+const {
+  UserService: { allowIfLoggedIn, hasAccessTo },
+  FileService: { saveCsv },
+} = require("../services");
 
 const {
-  addUser,
-  addUsersFromFile,
-  getOwnProfile,
-  getUserById,
-  getAllUsers,
-  updateOwnPassword,
-  updateOwnProfile,
-  updateAnyUserById,
-  deleteOwnProfile,
-  deleteAnyUserById,
-} = require("../controllers/userController");
+  userController: {
+    addUser,
+    addUsersFromFile,
+    getOwnProfile,
+    getUserById,
+    getAllUsers,
+    updateOwnPassword,
+    updateOwnProfile,
+    updateAnyUserById,
+    deleteOwnProfile,
+    deleteAnyUserById,
+  },
+} = require("../controllers");
 
 /*
  * GET USER INFO

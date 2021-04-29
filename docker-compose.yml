@@ -1,7 +1,7 @@
 version: "3"
 services:
   dev:
-    image: node:12.16.3-alpine3.9
+    image: node:14-alpine
     volumes:
       - nodemodules:/usr/src/service/node_modules
       - .:/usr/src/service
@@ -10,11 +10,24 @@ services:
     ports:
       - 3000:3000
     depends_on:
+      - file_server
+    env_file: .env
+
+  file_server:
+    image: node:14-alpine
+    volumes:
+      - nodemodules:/usr/src/service/node_modules
+      - .:/usr/src/service/file_server
+    working_dir: /usr/src/service/file_server
+    command: npm run dev
+    ports:
+      - 3001:3001
+    depends_on:
       - database
     env_file: .env
 
   unit:
-    image: node:12.16.3-alpine3.9
+    image: node:14-alpine
     volumes:
       - nodemodules:/usr/src/service/node_modules
       - .:/usr/src/service
@@ -25,7 +38,7 @@ services:
     env_file: .env
 
   coverage:
-    image: node:12.16.3-alpine3.9
+    image: node:14-alpine
     volumes:
       - nodemodules:/usr/src/service/node_modules
       - .:/usr/src/service
@@ -38,7 +51,7 @@ services:
     env_file: .env
 
   integration:
-    image: node:12.16.3-alpine3.9
+    image: node:14-alpine
     volumes:
       - nodemodules:/usr/src/service/node_modules
       - .:/usr/src/service

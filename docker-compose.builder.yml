@@ -1,14 +1,18 @@
-version: '2'
+version: "2"
 services:
   base:
-    image: node:12.16.3-alpine3.9
+    image: node:14-alpine
     volumes:
       - nodemodules:/usr/src/service/node_modules
       - .:/usr/src/service/
     working_dir: /usr/src/service/
-  install:
+  install_python:
     extends:
       service: base
+    command: apk --no-cache add g++ gcc libgcc libstdc++ linux-headers make python
+  install_node:
+    extends:
+      service: install_python
     command: npm i
 volumes:
   nodemodules:

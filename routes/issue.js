@@ -67,7 +67,6 @@ router.post(
   "/images",
   allowIfLoggedIn,
   hasAccessTo("createOwn", "issue"),
-  saveImages,
   saveImagesController
 );
 

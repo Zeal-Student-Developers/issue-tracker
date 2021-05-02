@@ -5,7 +5,8 @@ const { unlinkSync, createReadStream } = require("fs");
 const { extname } = require("path");
 const { randomBytes } = require("crypto");
 
-const Image = require("../models/Image");
+const Image = require("../models");
+const { FILE_SERVER_URI } = require("../config");
 
 /** Maximum image count */
 const MAX_IMAGE_COUNT = 3;
@@ -21,11 +22,21 @@ const storage = multer.diskStorage({
 });
 
 /**
- * Express middleware for storing images on local storage. Saves at max
- * `MAX_IMAGE_COUNT` files
+ * Stores images on local storage. Saves at max `MAX_IMAGE_COUNT` files
  */
 const saveImages = multer({
   storage: storage,
+  fileFilter: (_, { originalname, mimetype }, cb) => {
+    const allowedFileTypes = /jpeg|jpg|png|gif/;
+
+    const hasValidExtension = allowedFileTypes.test(extname(originalname));
+    const hasValidMimetype = allowedFileTypes.test(mimetype);
+
+    if (hasValidExtension && hasValidMimetype) {
+      return cb(null, true);
+    }
+    return cb({ message: "Please provide image files only" }, false);
+  },
 }).array("images", MAX_IMAGE_COUNT);
 
 /**
@@ -47,18 +58,15 @@ const uploadImages = async (images, userId) => {
   images.forEach(({ path }) => form.append("images", createReadStream(path)));
 
   try {
-    const response = await axios.post(
-      `${process.env.FILE_SERVER_URI}/image`,
-      form,
-      {
-        headers: form.getHeaders(),
-      }
-    );
+    const response = await axios.post(`${FILE_SERVER_URI}/image`, form, {
+      headers: form.getHeaders(),
+    });
 
     const { data, status } = response;
     if (status === 200) {
       return data;
     }
+
     return null;
   } catch (error) {
     throw error;
@@ -73,14 +81,7 @@ const uploadImages = async (images, userId) => {
  * @param {String} issueId ID of the issue
  */
 const updateImageIssueId = async (images, issueId) => {
-  await Image.updateMany(
-    {
-      path: { $in: images },
-    },
-    {
-      issueId: issueId,
-    }
-  );
+  await Image.updateMany({ path: { $in: images } }, { issueId: issueId });
 };
 
 module.exports = { saveImages, uploadImages, updateImageIssueId, saveCsv };

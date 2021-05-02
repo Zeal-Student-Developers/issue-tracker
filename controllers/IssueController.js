@@ -8,7 +8,7 @@ const {
     getAllIssuesByPhrase,
     createIssue,
   },
-  FileService: { uploadImages, updateImageIssueId },
+  FileService: { uploadImages, updateImageIssueId, saveImages },
   UserService: { getUserById },
 } = require("../services");
 
@@ -179,44 +179,51 @@ const getIssuesByPhraseController = async function (req, res) {
  * @param {Request} req Request Object
  * @param {Response} res Response Object
  */
-const saveImagesController = async function (req, res) {
-  const files = req.files;
-  const { id } = req.user;
-  if (files.length === 0) {
-    return res
-      .status(400)
-      .send(new Error("BAD_REQUEST", "Please provide images to save"));
-  }
-  try {
-    const data = await uploadImages(files, id);
-    if (data) {
-      const paths = [];
-      data.files.forEach(async (file) => {
-        const path = `${process.env.FILE_SERVER_URI}/${file.path}`;
-        paths.push(path);
-
-        await Image.create({
-          path,
-          mimetype: file.mimetype,
-          userId: req.user.id,
-          issueId: null,
-          createdOn: file.createdOn,
-        });
-      });
-
-      return res.status(200).json({
-        code: "OK",
-        result: "SUCCESS",
-        files: paths,
-      });
+const saveImagesController = function (req, res) {
+  saveImages(req, res, async (err) => {
+    if (err) {
+      res.status(400).send(new Error("BAD_REQUEST", err.message));
+      return;
     }
-    res
-      .status(500)
-      .send(new Error("INTERNAL_SERVER_ERROR", "Something went wrong"));
-  } catch (error) {
-    console.log(error);
-    res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
-  }
+
+    const files = req.files;
+    const { id } = req.user;
+    if (files.length === 0) {
+      return res
+        .status(400)
+        .send(new Error("BAD_REQUEST", "Please provide images to save"));
+    }
+    try {
+      const data = await uploadImages(files, id);
+      if (data) {
+        const paths = [];
+        data.files.forEach(async (file) => {
+          const path = `${process.env.FILE_SERVER_URI}/${file.path}`;
+          paths.push(path);
+
+          await Image.create({
+            path,
+            mimetype: file.mimetype,
+            userId: req.user.id,
+            issueId: null,
+            createdOn: file.createdOn,
+          });
+        });
+
+        return res.status(200).json({
+          code: "OK",
+          result: "SUCCESS",
+          files: paths,
+        });
+      }
+      res
+        .status(500)
+        .send(new Error("INTERNAL_SERVER_ERROR", "Something went wrong"));
+    } catch (error) {
+      console.log(error);
+      res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
+    }
+  });
 };
 
 /**

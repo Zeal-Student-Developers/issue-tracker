@@ -91,11 +91,11 @@ _All the requests must send the data in_ `application/JSON` _format only_.
 
 ```JSON
 {
-  "zprn": "<zprn>",
+  "userId": "<userId>",
   "password": "<password>",
 }
 ```
-- zprn should be exactly 7 characters long, and in `Integer` format.
+- userId should be exactly 7 characters long, and in `Integer` format.
 - password should be at least 6 characters long,and in `String` format.
 
 _Successful Response format_:
@@ -152,7 +152,7 @@ statusCode: 200
 The following details about the user are returned:
 ```JSON
 {
-  "zprn": "user's zprn",
+  "userId": "user's userId",
   "firstName": "user's firstName",
   "lastName": "user's lastName",
   "department": "user's department",
@@ -174,7 +174,7 @@ The following details about the user are returned:
 **Required parameters**:
 ```JSON
 {
-  "zprn": "<user's zprn>",
+  "userId": "<user's userId>",
   "firstName": "<user's first name>",
   "lastName": "<user's last name>",
   "password": "<user's password>",
@@ -182,7 +182,7 @@ The following details about the user are returned:
   "role": "<user's role>",
 }
 ```
-- zprn must be exactly 7 characters long, in `Integer` format.
+- userId must be exactly 7 characters long, in `Integer` format.
 - password must be at least 6 characters, in the `String` format.
 - department must be at least 2 characters long, in `String` format.
 - role should be any one of the specified roles.
@@ -248,10 +248,10 @@ statusCode : 400
 {
   "code": "BAD_REQUEST",
   "result": "FAILURE",
-  "message": "Users with zprn [list] have inappropriate/insufficient data"
+  "message": "Users with userId [list] have inappropriate/insufficient data"
 }
 ```
-- The `list` would be a comma-seperated list of zprns of users profiles having inappropriate/insufficient data, with parantheses.
+- The `list` would be a comma-seperated list of userId of users profiles having inappropriate/insufficient data, with parantheses.
 
 > **Note:** If any user has inappropriate/insufficient data, no user profiles are created at all. The client must again make a `POST` request to the API with the entire corrected data.
 
@@ -300,7 +300,7 @@ statusCode: 200
   "code": "OK",
   "result": "SUCCESS",
   "user": {
-    "zprn": "<user's zprn>",
+    "userId": "<user's userId>",
     "firstName": "<user's first name>",
     "lastName": "<user's last name>",
     "department": "<user's department>",
@@ -319,7 +319,7 @@ statusCode: 200
 **Accessible to**: Only to `auth_level_two` and above.
 <br>
 
-**Required parameters**: No data should be passed in `application/JSON` format, only valid `userID (zprn)` should be specified in the **URL**.
+**Required parameters**: No data should be passed in `application/JSON` format, only valid `userID` should be specified in the **URL**.
 
 _Successful Response format_:
 ```JSON
@@ -329,7 +329,7 @@ statusCode: 200
   "code": "OK",
   "result": "SUCCESS",
   "user": {
-    "zprn": "<user's zprn>",
+    "userId": "<user's userId>",
     "firstName": "<user's first name>",
     "lastName": "<user's last name>",
     "department": "<user's department>",
@@ -450,7 +450,7 @@ statusCode: 200
 **Accessible to**: `auth_level_two` & above.
 <br>
 
-**Required parameters**: No data should be passed in `application/JSON` format, only valid `userID (zprn)` should be specified in the **URL**.
+**Required parameters**: No data should be passed in `application/JSON` format, only valid `userID` should be specified in the **URL**.
 <br>
 
 _Successful Response format_:
@@ -526,6 +526,7 @@ statusCode : 200
   "files": "[paths to images]",
 }
 ```
+> **Note:** The server only accepts image files of type `jpg`, `jpeg`, `png` and `gif` only. If any one of the files sent is not of one of the above types, none of the files are uploaded, and the server responds with an error.
 
 **Step II:** Sending issue details.
 

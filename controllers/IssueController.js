@@ -466,7 +466,7 @@ const postCommentController = async function (req, res) {
               new Error("BAD_REQUEST", "Please provide a valid comment String")
             );
         }
-        issue.comments.push({ comment: comment.trim(), postedBy: id });
+        issue.comments.push({ comment: comment.trim() });
         await issue.save();
         res.status(200).json({
           code: "OK",

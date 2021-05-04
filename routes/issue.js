@@ -6,6 +6,7 @@ const {
     getAllResolvedIssues,
     getAllUnresolvedIssues,
     getIssueById,
+    getIssuesByUser,
     getIssuesByPhrase,
     saveImagesController,
     addIssue,
@@ -20,8 +21,14 @@ const {
 
 const {
   UserService: { allowIfLoggedIn, hasAccessTo },
-  FileService: { saveImages },
 } = require("../services");
+
+router.get(
+  "/own",
+  allowIfLoggedIn,
+  hasAccessTo("readAny", "issue"),
+  getIssuesByUser
+);
 
 // Get all issues
 router.get(
@@ -47,6 +54,7 @@ router.get(
   getAllUnresolvedIssues
 );
 
+// Get issues by keywords
 router.get(
   "/phrase",
   allowIfLoggedIn,

@@ -3,6 +3,7 @@ const { Error, Image } = require("../models");
 const {
   IssueService: {
     getIssueById,
+    getIssuesByUserId,
     getAllIssues,
     getAllIssuesByDepartment,
     getAllIssuesByPhrase,
@@ -131,6 +132,25 @@ const getIssueByIdController = async function (req, res) {
     } else {
       res.status(400).send(new Error("BAD_REQUEST", "No issue found"));
     }
+  } catch (error) {
+    res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
+  }
+};
+
+/**
+ * Controller to handle get issue by ID
+ * @param {Request} req Request Object
+ * @param {Response} res Response Object
+ */
+const getIssuesByUserController = async function (req, res) {
+  let issues = null;
+  try {
+    issues = await getIssuesByUserId(req.user.id);
+    res.status(200).json({
+      code: "OK",
+      result: "SUCCESS",
+      issues,
+    });
   } catch (error) {
     res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
   }
@@ -583,6 +603,7 @@ module.exports = {
   getAllResolvedIssues: getAllResolvedIssuesController,
   getAllUnresolvedIssues: getAllUnresolvedIssuesController,
   getIssueById: getIssueByIdController,
+  getIssuesByUser: getIssuesByUserController,
   getIssuesByPhrase: getIssuesByPhraseController,
   saveImagesController,
   updateIssue: updateIssueController,

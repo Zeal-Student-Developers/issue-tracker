@@ -679,6 +679,25 @@ statusCode : 200
   "issue": "[issue]"
 }
 ```
+
+#### Get issues by created by currently logged in user 
+**Method**: **`GET`**
+<br>
+**URL**: **`api/issues/own`**
+<br>
+**Accessible to**: `All`
+
+**Required parameters**: `None`
+
+_Successful Response format_:
+```JSON
+statusCode : 200
+{
+  "code": "OK",
+  "result": "SUCCESS",
+  "issues": "[List of issues]"
+}
+```
 **[⬆Back to index](#index)**
 
 ### Updating issue

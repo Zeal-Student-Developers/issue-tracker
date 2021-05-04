@@ -43,6 +43,18 @@ class IssueService {
   }
 
   /**
+   * Finds the issue created by specified user.
+   * @param {String} id ID of the user.
+   * @returns {Promise<Document[]>} Issue created by the specified user.
+   */
+  async getIssuesByUserId(id) {
+    return await Issue.findOne({
+      createdBy: id,
+      isDeleted: false,
+    });
+  }
+
+  /**
    * Finds issues containing given keywords.
    * @param {String} phrase String containing keywords to find in issues
    * @returns {Promise<Document[]>} List of issues containing given keywords.

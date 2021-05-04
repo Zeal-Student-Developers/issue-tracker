@@ -8,6 +8,7 @@
     - [Authentication & Authorization](#authentication--authorization)
       - [Login](#login)
       - [Refreshing the JWT token](#refreshing-the-jwt-token)
+  - [Health Check](#health-check)
   - [Users](#users)
     - [User Resource](#user-resource)
     - [Creating Users](#creating-users)
@@ -144,6 +145,29 @@ statusCode: 200
 **[⬆Back to index](#index)**
 
 ---
+
+## Health Check
+> This a public route accessible to all without the use of access token. Use this route to check the status of the API.
+
+**Method**: **`GET`**
+<br>
+**URL**: **`/api`**
+<br>
+**Accessible to**: `All`
+
+_Successful Response format_:
+```JSON
+statusCode : 200
+
+{
+  "code": "OK",
+  "result": "SUCCESS",
+  "message": "Grievance System API —— Read the API documentation here: https://github.com/Zeal-Student-Developers/issue-tracker/blob/master/Documentation.md"
+}
+```
+
+---
+
 ## Users
 
 >**Note:** All requests must contain the valid non-expired JWT token in the `authorization` header as `Bearer [the JWT token].

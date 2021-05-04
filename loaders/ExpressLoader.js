@@ -38,6 +38,15 @@ const getExpressApp = function () {
 
   app.use(Express.json());
 
+  app.get("/api", (_, res) => {
+    res.status(200).json({
+      code: "OK",
+      result: "SUCCESS",
+      message:
+        "Grievance System API —— Read the API documentation here: https://github.com/Zeal-Student-Developers/issue-tracker/blob/master/Documentation.md",
+    });
+  });
+
   app.use("/api/auth/", authRoutes);
 
   // For auth routes, no need to load user

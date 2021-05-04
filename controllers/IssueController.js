@@ -138,7 +138,7 @@ const getIssueByIdController = async function (req, res) {
 };
 
 /**
- * Controller to handle get issue by ID
+ * Controller to handle get issue by user
  * @param {Request} req Request Object
  * @param {Response} res Response Object
  */

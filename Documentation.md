@@ -9,6 +9,7 @@
       - [Login](#login)
       - [Refreshing the JWT token](#refreshing-the-jwt-token)
   - [Health Check](#health-check)
+  - [Paginated Results](#paginated-results)
   - [Users](#users)
     - [User Resource](#user-resource)
     - [Creating Users](#creating-users)
@@ -168,6 +169,9 @@ statusCode : 200
 
 ---
 
+### Paginated Results
+
+The search results returning a `list` of resources are paginated. The page number and search limit should be passed as query parameters in the URL. Both the page number and search limit are optional. If not provided, the page number defaults to `1` and search limit defaults to `5`.
 ## Users
 
 >**Note:** All requests must contain the valid non-expired JWT token in the `authorization` header as `Bearer [the JWT token].
@@ -285,7 +289,7 @@ statusCode : 400
 
 **Method**: **`GET`**
 <br>
-****URL****: **`api/users/all`**
+**URL**: **`api/users/all?page=[page_number]&limit=[search_limit]`**
 <br>
 **Accessible to**: Only to `auth_level_two` and above.
 <br>
@@ -590,7 +594,7 @@ statusCode : 200
 
 ### Getting Issues
 
->**Note:** The routes returning a list of issues depend on the role of logged in user. Users with role of `auth_level_two` & above get the list of all issues irrespective of the department of the issue. Rest all users get list of issues related to their department or those whose scope is `institute`.
+>**Note:** The routes returning a list of issues depend on the role of logged in user. Users with role of `auth_level_two` & above get the list of all issues irrespective of the department of the issue. Rest all users get list of issues related to their department or those whose scope is `institute`. 
 
 #### Getting All Issues
 
@@ -600,7 +604,7 @@ statusCode : 200
 
 **Method**: **`GET`**
 <br>
-**URL**: **`api/issues/all`**
+**URL**: **`api/issues/all?page=[page_number]&limit=[search_limit]`**
 <br>
 **Accessible to**: `All`
 
@@ -612,17 +616,21 @@ statusCode : 200
 {
   "code": "OK",
   "result": "SUCCESS",
-  "issues":"[List of Issues]",
+  "data": {
+    "hasNextPage": "[Whether next page is available to fetch]",
+    "hasPreviousPage": "[Whether previos page is available to fetch]",
+    "issues":"[List of Issues]",
+  },
 }
 ```
 **[⬆Back to index](#index)**
 
 #### Get all resolved issues
-]Returns a list of all unresolved issues only.
+> Returns a list of all unresolved issues only.
 
 **Method**: **`GET`**
 <br>
-**URL**: **`api/issues/all/resolved`**
+**URL**: **`api/issues/all/resolved?page=[page_number]&limit=[search_limit]`**
 <br>
 **Accessible to**: `All`
 
@@ -634,7 +642,11 @@ statusCode : 200
 {
   "code": "OK",
   "result": "SUCCESS",
-  "issues": "[List of issues]",
+  "data": {
+    "hasNextPage": "[Whether next page is available to fetch]",
+    "hasPreviousPage": "[Whether previos page is available to fetch]",
+    "issues":"[List of Issues]",
+  },
 }
 ```
 **[⬆Back to index](#index)**
@@ -644,7 +656,7 @@ statusCode : 200
 
 **Method**: **`GET`**
 <br>
-**URL**: **`api/issues/all/unresolved`**
+**URL**: **`api/issues/all/unresolved?page=[page_number]&limit=[search_limit]`**
 <br>
 **Accessible to**: `All`
 
@@ -656,7 +668,11 @@ statusCode : 200
 {
   "code": "OK",
   "result": "SUCCESS",
-  "issues": "[List of issues]",
+  "data": {
+    "hasNextPage": "[Whether next page is available to fetch]",
+    "hasPreviousPage": "[Whether previos page is available to fetch]",
+    "issues":"[List of Issues]",
+  },
 }
 ```
 **[⬆Back to index](#index)**
@@ -664,7 +680,7 @@ statusCode : 200
 #### Get issues by phrase:
 **Method**: **`GET`**
 <br>
-**URL**: **`api/issues/phrase`**
+**URL**: **`api/issues/phrase?page=[page_number]&limit=[search_limit]`**
 <br>
 **Accessible to**: `All`
 
@@ -681,7 +697,11 @@ statusCode : 200
 {
   "code": "OK",
   "result": "SUCCESS",
-  "issues":"[List of issues containing the provided keywords]",
+  "data": {
+    "hasNextPage": "[Whether next page is available to fetch]",
+    "hasPreviousPage": "[Whether previos page is available to fetch]",
+    "issues":"[List of Issues]",
+  },
 }
 ```
 
@@ -707,7 +727,7 @@ statusCode : 200
 #### Get issues by created by currently logged in user 
 **Method**: **`GET`**
 <br>
-**URL**: **`api/issues/own`**
+**URL**: **`api/issues/own?page=[page_number]&limit=[search_limit]`**
 <br>
 **Accessible to**: `All`
 

@@ -8,26 +8,40 @@ class IssueService {
 
   /**
    * Finds all the issues from the database.
+   * @param {Number} page Page number of the search result, used as offset
+   * from the beginning of the database
+   * @param {Number} limit Limit of number of search elements returned at a
+   * time
    * @returns {Promise<Document[]>} List of all the issues.
    */
-  async getAllIssues() {
+  async getAllIssues(page = 0, limit = 10) {
     return await Issue.find({
       isInappropriate: false,
       isDeleted: false,
-    }).sort("-upvotes");
+    })
+      .sort("-upvotes")
+      .skip(page * limit)
+      .limit(limit);
   }
 
   /**
    * Finds all the issues by the specified department.
    * @param {String} dept Department to get the issues from.
+   * @param {Number} page Page number of the search result, used as offset
+   * from the beginning of the database
+   * @param {Number} limit Limit of number of search elements returned at a
+   * time
    * @returns {Promise<Document[]>} List of all the issues by specified department.
    */
-  async getAllIssuesByDepartment(dept) {
+  async getAllIssuesByDepartment(dept, page = 0, limit = 10) {
     return await Issue.find({
       isInappropriate: false,
       isDeleted: false,
       $or: [{ department: dept }, { scope: "ORGANIZATION" }],
-    }).sort("-upvotes");
+    })
+      .sort("-upvotes")
+      .skip(page * limit)
+      .limit(limit);
   }
 
   /**
@@ -47,24 +61,33 @@ class IssueService {
    * @param {String} id ID of the user.
    * @returns {Promise<Document[]>} Issue created by the specified user.
    */
-  async getIssuesByUserId(id) {
-    return await Issue.findOne({
+  async getIssuesByUserId(id, page = 0, limit = 10) {
+    return await Issue.find({
       createdBy: id,
       isDeleted: false,
-    });
+    })
+      .skip(page * limit)
+      .limit(limit);
   }
 
   /**
    * Finds issues containing given keywords.
    * @param {String} phrase String containing keywords to find in issues
+   * @param {Number} page Page number of the search result, used as offset
+   * from the beginning of the database
+   * @param {Number} limit Limit of number of search elements returned at a
+   * time
    * @returns {Promise<Document[]>} List of issues containing given keywords.
    */
-  async getAllIssuesByPhrase(phrase) {
+  async getAllIssuesByPhrase(phrase, page = 0, limit = 10) {
     const keywords = phrase.trim().replace(/[\s\n]+/gi, "|");
     const regex = new RegExp(keywords, "gi");
     const issues = await Issue.find({
       $or: [{ title: regex }, { description: regex }],
-    });
+    })
+      .skip(page * limit)
+      .limit(limit);
+
     return issues;
   }
 

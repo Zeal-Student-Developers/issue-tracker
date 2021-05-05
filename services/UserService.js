@@ -35,10 +35,16 @@ class UserService {
 
   /**
    * Gets all the users in database
+   * @param {Number} page Page number of the search result, used as offset
+   * from the beginning of the database
+   * @param {Number} limit Limit of number of search elements returned at a
+   * time
    * @returns {Promise<Document[]>} List of all users
    */
-  async getAllUsers() {
-    return await User.find({ isDisabled: false });
+  async getAllUsers(page = 0, limit = 10) {
+    return await User.find({ isDisabled: false })
+      .skip(page * limit)
+      .limit(limit);
   }
 
   /**

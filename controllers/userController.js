@@ -318,15 +318,30 @@ const getUserByIdController = async function (req, res) {
  * @param {Response} res
  */
 const getAllUsersController = async function (req, res) {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 5;
+
+  const pageNumber = page < 1 ? 0 : page - 1;
+  const pageLimit = 2 * (limit < 5 ? 5 : limit);
+
   try {
-    const users = (await getAllUsers()).map((user) => ({
+    const users = (await getAllUsers(pageNumber, pageLimit)).map((user) => ({
       userId: user.userId,
       firstName: user.firstName,
       lastName: user.lastName,
       department: user.department,
       role: user.role,
     }));
-    res.status(200).json({ code: "OK", result: "SUCCESS", users });
+
+    res.status(200).json({
+      code: "OK",
+      result: "SUCCESS",
+      data: {
+        hasNextPage: users.length > limit,
+        hasPreviousPage: page > 1,
+        users: users.slice(0, limit),
+      },
+    });
   } catch (error) {
     res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
   }

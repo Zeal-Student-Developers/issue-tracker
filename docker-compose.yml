@@ -7,8 +7,9 @@ services:
       - .:/usr/src/service
     working_dir: /usr/src/service
     command: npm run dev
+    restart: always
     ports:
-      - 3000:3000
+      - 57842:3000
     depends_on:
       - file_server
     env_file: .env
@@ -65,10 +66,12 @@ services:
 
   database:
     image: dannyben/alpine-mongo:latest
+    restart: always
     ports:
-      - 27017:27017
+      - 58703:27017
     volumes:
       - mongodatabase:/data/db
+    command: mongod --auth --port 27017 --dbpath /data/db --bind_ip 0.0.0.0
 
 volumes:
   nodemodules:

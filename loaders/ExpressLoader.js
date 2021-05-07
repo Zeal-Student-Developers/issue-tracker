@@ -1,4 +1,5 @@
 const Express = require("express");
+const cors = require("cors");
 
 const { Error } = require("../models");
 
@@ -42,6 +43,7 @@ const getExpressApp = function () {
   const app = Express();
 
   app.use(Express.json());
+  app.use(cors());
 
   app.get("/api", (_, res) => {
     res.status(200).json({

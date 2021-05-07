@@ -83,7 +83,7 @@ const refreshTokenController = async (req, res) => {
   try {
     const user = await getUserById(userID);
     if (!user) {
-      res.send(401).send(new Error("BAD_REQUEST", "No user found"));
+      res.status(401).send(new Error("BAD_REQUEST", "No user found"));
     } else {
       if (user.isDisabled) {
         return res

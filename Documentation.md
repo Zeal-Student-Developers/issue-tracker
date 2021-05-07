@@ -841,3 +841,39 @@ statusCode : 200
 }
 ```
 **[⬆Back to index](#index)**
+
+## Stats
+
+#### Get Issues Stats:
+**Method**: **`GET`**
+<br>
+**URL**: **`api/stats/issues`**
+<br>
+**Accessible to**: `All`
+
+**Required parameters**: `None`
+
+_Successful Response format_:
+```JSON
+statusCode : 200
+
+{
+  "code": "OK",
+  "result": "SUCCESS",
+  "stats": {
+    "total": "<total issues>",
+    "resolved": "<resolved issues>",
+    "unresolved": "<unresolved issues>",
+    "violatingIssues": "<issues violating code of conduct>",
+    "issuesCountByDepartment":"[issues count by department]",
+    "violatingUsersCount": "<users posting violating content>",
+    "issuesPostedByMonth": "[issues posted by month]", 
+    "issuesSolvedByMonth": "[issues solved by month]",
+    "topIssues": {
+      "byUpvotes": "[List of issues]",
+      "byDepartment": "[List of issues]",
+    } 
+  }
+}
+
+```

@@ -30,7 +30,7 @@ exports.roles = (() => {
     .updateAny("profile")
     .deleteAny("profile");
 
-  ac.grant("auth_level_three").extend("auth_level_two");
+  ac.grant("auth_level_three").extend("auth_level_two").readAny("stats");
 
   return ac;
 })();

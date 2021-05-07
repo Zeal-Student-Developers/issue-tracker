@@ -7,7 +7,12 @@ const {
   UserService: { getUserById },
 } = require("../services");
 
-const { authRoutes, userRoutes, issueRoutes } = require("../routes");
+const {
+  authRoutes,
+  userRoutes,
+  issueRoutes,
+  statsRoutes,
+} = require("../routes");
 
 /**
  * Express middleware to verify the JWT token passed in the `authorization`
@@ -53,6 +58,7 @@ const getExpressApp = function () {
   app.use(loadUser);
   app.use("/api/users/", userRoutes);
   app.use("/api/issues/", issueRoutes);
+  app.use("/api/stats/", statsRoutes);
 
   // Request to any route other than the above must result in `404` error
   app.use((_, res, next) => {

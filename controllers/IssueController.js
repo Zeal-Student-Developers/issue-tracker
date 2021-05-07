@@ -14,8 +14,13 @@ const {
 } = require("../services");
 
 const {
-  issueValidations: { validateUserData },
-} = require("../misc/validation");
+  validations: {
+    issueValidations: { validateUserData },
+  },
+  helpers: {
+    issuesHelper: { filterIssueProperties },
+  },
+} = require("../misc");
 
 /** Threshold value for reports count on an issue  */
 const ISSUE_REPORTS_THRESHOLD = 75;
@@ -639,32 +644,6 @@ const deleteIssueController = async function (req, res) {
   } catch (error) {
     res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
   }
-};
-
-/**
- * Filters Issue properties from the given object
- * @param {Document} issue Mongoose Issue Object
- * @param {String} userId ID of the current user
- * @returns {Document} issue object with only required properties
- */
-const filterIssueProperties = function (issue, userId) {
-  const filteredIssue = JSON.parse(JSON.stringify(issue));
-
-  filteredIssue["isAuthor"] = filteredIssue.createdBy.toString() === userId;
-  filteredIssue["hasUpvoted"] = !!filteredIssue.upvoters.find(
-    (id) => id.toString() === userId
-  );
-  filteredIssue["hasReported"] = !!filteredIssue.reporters.find(
-    (id) => id.toString() === userId
-  );
-
-  delete filteredIssue.__v;
-  delete filteredIssue.isDeleted;
-  delete filteredIssue.reporters;
-  delete filteredIssue.createdBy;
-  delete filteredIssue.upvoters;
-
-  return filteredIssue;
 };
 
 module.exports = {

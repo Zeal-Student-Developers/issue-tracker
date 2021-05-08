@@ -322,7 +322,7 @@ const getAllUsersController = async function (req, res) {
   const limit = parseInt(req.query.limit) || 5;
 
   const pageNumber = page < 1 ? 0 : page - 1;
-  const pageLimit = 2 * (limit < 5 ? 5 : limit);
+  const pageLimit = limit < 5 ? 5 : limit;
 
   try {
     const users = (await getAllUsers(pageNumber, pageLimit)).map((user) => ({

@@ -21,7 +21,9 @@ class IssueService {
     })
       .sort("-upvotes")
       .skip(page * limit)
-      .limit(limit);
+      /* Twice the limit so as to check if more elemenst are available for
+        next fetch */
+      .limit(2 * limit);
   }
 
   /**
@@ -41,7 +43,7 @@ class IssueService {
     })
       .sort("-upvotes")
       .skip(page * limit)
-      .limit(limit);
+      .limit(2 * limit);
   }
 
   /**
@@ -67,7 +69,7 @@ class IssueService {
       isDeleted: false,
     })
       .skip(page * limit)
-      .limit(limit);
+      .limit(2 * limit);
   }
 
   /**
@@ -86,9 +88,79 @@ class IssueService {
       $or: [{ title: regex }, { description: regex }],
     })
       .skip(page * limit)
-      .limit(limit);
+      .limit(2 * limit);
 
     return issues;
+  }
+
+  /**
+   * Finds department level issues containing given keywords.
+   * @param {String} phrase String containing keywords to find in issues
+   * @param {String} department Department of issues to search
+   * @param {Number} page Page number of the search result, used as offset
+   * from the beginning of the database
+   * @param {Number} limit Limit of number of search elements returned at a
+   * time
+   * @returns {Promise<Document[]>} List of issues containing given keywords.
+   */
+  async getAllIssuesByPhraseAndDepartment(
+    phrase,
+    department,
+    page = 0,
+    limit = 10
+  ) {
+    const keywords = phrase.trim().replace(/[\s\n]+/gi, "|");
+    const regex = new RegExp(keywords, "gi");
+    const issues = await Issue.find({
+      $and: [
+        { $or: [{ title: regex }, { description: regex }] },
+        { $or: [{ department }, { scope: "ORGANIZATION" }] },
+      ],
+    })
+      .skip(page * limit)
+      .limit(2 * limit);
+
+    return issues;
+  }
+
+  /**
+   * Get all comments for the issue.
+   * @param {String} id Id of the issue
+   * @param {Number} page Page number of the search result, used as offset
+   * from the beginning of the database
+   * @param {Number} limit Limit of number of search elements returned at a
+   * time
+   * @returns {Promise<Document[]>} List of issues containing given keywords.
+   */
+  async getComments(id, page = 0, limit = 10) {
+    const start = page * limit;
+    const end = start + 2 * limit;
+
+    return Issue.findById(id, {
+      comments: { $slice: [start, end] },
+      department: 1,
+      scope: 1,
+    });
+  }
+
+  /**
+   * Get all solutions for the issue.
+   * @param {String} id Id of the issue
+   * @param {Number} page Page number of the search result, used as offset
+   * from the beginning of the database
+   * @param {Number} limit Limit of number of search elements returned at a
+   * time
+   * @returns {Promise<Document[]>} List of issues containing given keywords.
+   */
+  async getSolutions(id, page = 0, limit = 10) {
+    const start = page * limit;
+    const end = start + 2 * limit;
+
+    return Issue.findById(id, {
+      solutions: { $slice: [start, end] },
+      department: 1,
+      scope: 1,
+    });
   }
 
   /**

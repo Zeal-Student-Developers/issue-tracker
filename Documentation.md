@@ -1,6 +1,7 @@
 # Reference documentation for the API.
 
 #### Index
+
   - [Roles](#roles)
     - [Roles with their access rights](#roles-with-their-access-rights)
   - [Error Reporting](#error-reporting)
@@ -37,12 +38,17 @@
       - [Get all unresolved issues](#get-all-unresolved-issues)
       - [Get issues by phrase:](#get-issues-by-phrase)
       - [Get issue by ID](#get-issue-by-id)
+      - [Get issues by created by currently logged in user](#get-issues-by-created-by-currently-logged-in-user)
+      - [Getting comments](#getting-comments)
+      - [Getting solutions](#getting-solutions)
     - [Updating issue](#updating-issue)
       - [Toggle issue resolve status](#toggle-issue-resolve-status)
       - [Post a comment on issue](#post-a-comment-on-issue)
       - [Post a solution on issue](#post-a-solution-on-issue)
     - [Deleting issue](#deleting-issue)
       - [Delete an issue](#delete-an-issue)
+  - [Stats](#stats)
+      - [Get Issues Stats:](#get-issues-stats)
 ## Roles
 
 ### Roles with their access rights
@@ -532,6 +538,33 @@ statusCode : 403
 ## Issues
 
 ### Creating Issues
+
+### Issue Resource
+The following details about the issue are returned:
+```JSON
+{
+  "title": "Issue title",
+  "description": "Issue description",
+  "images": [
+    "List of image URLs",
+  ],
+  "isEdited": "Is issue edited",
+  "isResolved": "Is issue resolved",
+  "isInappropriate": "Is issue spam",
+  "createdOn": "Date issue was created on",
+  "_id": "Issue ID",
+  "section": "Issue section",
+  "department": "Issue department",
+  "scope": "Scope of issue",
+  "upvotes": "count of upvotes",
+  "commentsCount": "count of comments on issue",
+  "solutionsCount": "count of solutions on issue",
+  "isAuthor": "Is currently logged in user author of issue",
+  "hasUpvoted": "Has currently logged in user upvoted the issue",
+  "hasReported": "Has currently logged in user reported the issue",
+},
+```
+
 #### Create Issue
 Creating an issue is a two-step process:
 
@@ -680,16 +713,11 @@ statusCode : 200
 #### Get issues by phrase:
 **Method**: **`GET`**
 <br>
-**URL**: **`api/issues/phrase?page=[page_number]&limit=[search_limit]`**
+**URL**: **`api/issues/phrase?phrase=[search_phrase]&page=[page_number]&limit=[search_limit]`**
 <br>
 **Accessible to**: `All`
 
-**Required parameters**:
-```JSON
-{
-  "phrase":"Phrase containing the keywords"
-}
-```
+**Required parameters**: `phrase` as a query parameter in the URL itself
 
 _Successful Response format_:
 ```JSON
@@ -739,10 +767,75 @@ statusCode : 200
 {
   "code": "OK",
   "result": "SUCCESS",
-  "issues": "[List of issues]"
+  "data": {
+    "hasNextPage": "[Whether next page is available to fetch]",
+    "hasPreviousPage": "[Whether previos page is available to fetch]",
+    "issues":"[List of Issues]",
+  },
 }
 ```
 **[⬆Back to index](#index)**
+
+#### Getting comments
+**Method**: **`GET`**
+<br>
+**URL**: **`api/issues/:id/comments?page=[page_number]&limit=[page_limit]`**
+<br>
+**Accessible to**: `All`
+
+**Required parameters**: `None`
+ 
+_Successful Response format_:
+```JSON
+statusCode : 200
+{
+  "code": "OK",
+  "result": "SUCCESS",
+  "data": {
+    "hasNextPage": "[Whether next page is available to fetch]",
+    "hasPreviousPage": "[Whether previos page is available to fetch]",
+    "comments": [
+      {
+        "comment": "Comment text",
+        "postedOn": "Date comment was posted on",
+      }
+    ],
+  },
+}
+```
+
+#### Getting solutions
+**Method**: **`GET`**
+<br>
+**URL**: **`api/issues/:id/solutions`**
+<br>
+**Accessible to**: `All`
+
+**Required parameters**: `None`
+ 
+_Successful Response format_:
+```JSON
+statusCode : 200
+{
+  "code": "OK",
+  "result": "SUCCESS",
+  "data": {
+    "hasNextPage": "[Whether next page is available to fetch]",
+    "hasPreviousPage": "[Whether previos page is available to fetch]",
+    "solutions": [
+      {
+        "solution": "Solution text",
+        "postedBy": {
+          "id": "id of the author",
+          "firstName": "First name of the author",
+          "lastName": "Last name of the author",
+        },
+        "postedOn": "Date solution was posted on",
+      }
+    ],
+  },
+}
+```
 
 ### Updating issue
 

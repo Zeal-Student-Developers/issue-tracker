@@ -44,7 +44,9 @@ class UserService {
   async getAllUsers(page = 0, limit = 10) {
     return await User.find({ isDisabled: false })
       .skip(page * limit)
-      .limit(limit);
+      /* Twice the limit so as to check if more elemenst are available for
+        next fetch */
+      .limit(2 * limit);
   }
 
   /**

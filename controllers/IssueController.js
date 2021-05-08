@@ -7,6 +7,9 @@ const {
     getAllIssues,
     getAllIssuesByDepartment,
     getAllIssuesByPhrase,
+    getAllIssuesByPhraseAndDepartment,
+    getComments,
+    getSolutions,
     createIssue,
   },
   FileService: { uploadImages, updateImageIssueId, saveImages },
@@ -39,7 +42,7 @@ const getAllIssuesController = async function (req, res) {
   const limit = parseInt(req.query.limit) || 5;
 
   const pageNumber = page < 1 ? 0 : page - 1;
-  const pageLimit = 2 * (limit < 5 ? 5 : limit);
+  const pageLimit = limit < 5 ? 5 : limit;
   try {
     if (role === "auth_level_three") {
       issues = await getAllIssues(pageNumber, pageLimit);
@@ -61,7 +64,7 @@ const getAllIssuesController = async function (req, res) {
     result: "SUCCESS",
     data: {
       hasNextPage: issues.length > limit,
-      hasPreviosPage: page > 1,
+      hasPreviousPage: page > 1,
       issues: issues
         .slice(0, limit)
         .map((issue) => filterIssueProperties(issue, id)),
@@ -81,7 +84,7 @@ const getAllResolvedIssuesController = async function (req, res) {
   const limit = parseInt(req.query.limit) || 5;
 
   const pageNumber = page < 1 ? 0 : page - 1;
-  const pageLimit = 2 * (limit < 5 ? 5 : limit);
+  const pageLimit = limit < 5 ? 5 : limit;
   try {
     if (role === "auth_level_three") {
       issues = await getAllIssues();
@@ -104,7 +107,7 @@ const getAllResolvedIssuesController = async function (req, res) {
     result: "SUCCESS",
     data: {
       hasNextPage: issues.length > limit,
-      hasPreviosPage: page > 1,
+      hasPreviousPage: page > 1,
       issues: issues
         .slice(0, limit)
         .map((issue) => filterIssueProperties(issue, id)),
@@ -124,7 +127,7 @@ const getAllUnresolvedIssuesController = async function (req, res) {
   const limit = parseInt(req.query.limit) || 5;
 
   const pageNumber = page < 1 ? 0 : page - 1;
-  const pageLimit = 2 * (limit < 5 ? 5 : limit);
+  const pageLimit = limit < 5 ? 5 : limit;
   try {
     if (role === "auth_level_three") {
       issues = await getAllIssues(pageNumber, pageLimit);
@@ -147,7 +150,7 @@ const getAllUnresolvedIssuesController = async function (req, res) {
     result: "SUCCESS",
     data: {
       hasNextPage: issues.length > limit,
-      hasPreviosPage: page > 1,
+      hasPreviousPage: page > 1,
       issues: issues
         .slice(0, limit)
         .map((issue) => filterIssueProperties(issue, id)),
@@ -195,7 +198,7 @@ const getIssuesByUserController = async function (req, res) {
   const limit = parseInt(req.query.limit) || 5;
 
   const pageNumber = page < 1 ? 0 : page - 1;
-  const pageLimit = 2 * (limit < 5 ? 5 : limit);
+  const pageLimit = limit < 5 ? 5 : limit;
   try {
     issues = await getIssuesByUserId(req.user.id, pageNumber, pageLimit);
     res.status(200).json({
@@ -203,7 +206,7 @@ const getIssuesByUserController = async function (req, res) {
       result: "SUCCESS",
       data: {
         hasNextPage: issues.length > limit,
-        hasPreviosPage: page > 1,
+        hasPreviousPage: page > 1,
         issues: issues
           .slice(0, limit)
           .map((issue) => filterIssueProperties(issue, req.user.id)),
@@ -220,45 +223,37 @@ const getIssuesByUserController = async function (req, res) {
  * @param {Response} res Response Object
  */
 const getIssuesByPhraseController = async function (req, res) {
-  const { phrase } = req.body;
-  const page = parseInt(req.query.page);
-  const limit = parseInt(req.query.limit);
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 5;
+  const phrase = req.query.phrase;
 
-  if (phrase.trim()) {
+  if (phrase?.trim()) {
     const pageNumber = page < 1 ? 0 : page - 1;
-    const pageLimit = 2 * (limit < 5 ? 5 : limit);
+    const pageLimit = limit < 5 ? 5 : limit;
     const { id, role, department } = req.user;
 
     try {
-      let issues = await getAllIssuesByPhrase(phrase, pageNumber, pageLimit);
-      if (role === "auth_level_three") {
-        res.status(200).json({
-          code: "OK",
-          result: "SUCCESS",
-          data: {
-            hasNextPage: issues.length > limit,
-            hasPreviosPage: page > 1,
-            issues: issues
-              .slice(0, limit)
-              .map((issue) => filterIssueProperties(issue, id)),
-          },
-        });
-      } else {
-        res.status(200).json({
-          code: "OK",
-          result: "SUCCESS",
-          data: {
-            hasNextPage: issues.length > limit,
-            hasPreviosPage: page > 1,
-            issues: issues
-              .filter(
-                ({ department, scope }) =>
-                  department === department || scope === "ORGANIZATION"
-              )
-              .map((issue) => filterIssueProperties(issue, id)),
-          },
-        });
-      }
+      let issues =
+        role === "auth_level_three"
+          ? await getAllIssuesByPhrase(phrase, pageNumber, pageLimit)
+          : await getAllIssuesByPhraseAndDepartment(
+              phrase,
+              department,
+              pageNumber,
+              pageLimit
+            );
+
+      res.status(200).json({
+        code: "OK",
+        result: "SUCCESS",
+        data: {
+          hasNextPage: issues.length > limit,
+          hasPreviousPage: page > 1,
+          issues: issues
+            .slice(0, limit)
+            .map((issue) => filterIssueProperties(issue, id)),
+        },
+      });
     } catch (error) {
       res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
     }
@@ -266,6 +261,100 @@ const getIssuesByPhraseController = async function (req, res) {
     res
       .status(400)
       .send(new Error("BAD_REQUEST", "Please provide a phrase to search"));
+  }
+};
+
+/**
+ * Controller to handle get comments for given issue
+ * @param {Request} req Request Object
+ * @param {Response} res Response Object
+ */
+const getCommentsController = async function (req, res) {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 5;
+
+  const pageNumber = page < 1 ? 0 : page - 1;
+  const pageLimit = limit < 5 ? 5 : limit;
+
+  const { id } = req.params;
+  try {
+    const { comments, department, scope } = await getComments(
+      id,
+      pageNumber,
+      pageLimit
+    );
+
+    if (
+      scope === "ORGANIZATION" ||
+      department === req.user.department ||
+      req.user.role === "auth_level_three"
+    ) {
+      return res.status(200).json({
+        code: "OK",
+        result: "SUCCESS",
+        data: {
+          hasNextPage: comments.length > limit,
+          hasPreviousPage: page > 1,
+          comments,
+        },
+      });
+    }
+    res.status(403).send(new Error("FORBIDDEN", "Action not allowed"));
+  } catch (error) {
+    res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
+  }
+};
+
+/**
+ * Controller to handle get solutions for given issue
+ * @param {Request} req Request Object
+ * @param {Response} res Response Object
+ */
+const getSolutionsController = async function (req, res) {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 5;
+
+  const pageNumber = page < 1 ? 0 : page - 1;
+  const pageLimit = limit < 5 ? 5 : limit;
+
+  const { id } = req.params;
+  try {
+    const solution = await getSolutions(id, pageNumber, pageLimit);
+    if (!solution)
+      return res.status(401).send(new Error("BAD_REQUEST", "No issue found"));
+
+    const { solutions, department, scope } = solution;
+
+    if (
+      scope === "ORGANIZATION" ||
+      department === req.user.department ||
+      req.user.role === "auth_level_three"
+    ) {
+      const solutionList = [];
+
+      for (let index = 0; index < limit; index++) {
+        const { solution, postedBy, postedOn } = solutions[index];
+        const { firstName, lastName } = await getUserById(postedBy);
+        solutionList.push({
+          solution,
+          postedBy: { id: postedBy, firstName, lastName },
+          postedOn,
+        });
+      }
+
+      return res.status(200).json({
+        code: "OK",
+        result: "SUCCESS",
+        data: {
+          hasNextPage: solutions.length > limit,
+          hasPreviousPage: page > 1,
+          solutions: solutionList,
+        },
+      });
+    }
+    res.status(403).send(new Error("FORBIDDEN", "Action not allowed"));
+  } catch (error) {
+    res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
   }
 };
 
@@ -600,7 +689,10 @@ const postSolutionController = async function (req, res) {
       )
         res.status(403).send(new Error("FORBIDDEN", "Action not allowed"));
       else {
-        issue.solutions.push({ solution: solution.trim(), postedBy: id });
+        issue.solutions.push({
+          solution: solution.trim(),
+          postedBy: id,
+        });
         await issue.save();
         res.status(200).json({
           code: "OK",
@@ -654,6 +746,8 @@ module.exports = {
   getIssueById: getIssueByIdController,
   getIssuesByUser: getIssuesByUserController,
   getIssuesByPhrase: getIssuesByPhraseController,
+  getComments: getCommentsController,
+  getSolutions: getSolutionsController,
   saveImagesController,
   updateIssue: updateIssueController,
   postComment: postCommentController,

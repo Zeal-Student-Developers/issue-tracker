@@ -8,6 +8,8 @@ const {
     getIssueById,
     getIssuesByUser,
     getIssuesByPhrase,
+    getComments,
+    getSolutions,
     saveImagesController,
     addIssue,
     toggleResolveStatus,
@@ -15,6 +17,7 @@ const {
     postSolution,
     toggleUpvote,
     toggleInappropriate,
+    updateIssue,
     deleteIssue,
   },
 } = require("../controllers");
@@ -82,7 +85,12 @@ router.post(
 router.post("/", allowIfLoggedIn, hasAccessTo("createOwn", "issue"), addIssue);
 
 // Update an issue
-router.put("/:id/update", allowIfLoggedIn, hasAccessTo("updateOwn", "issue"));
+router.put(
+  "/:id/update",
+  allowIfLoggedIn,
+  hasAccessTo("updateOwn", "issue"),
+  updateIssue
+);
 
 // Mark an issue as resolved [Toggles the issue resolve status]
 router.put(
@@ -100,17 +108,33 @@ router.put(
   toggleInappropriate
 );
 
+// Get comments for an issue
+router.get(
+  "/:id/comments",
+  allowIfLoggedIn,
+  hasAccessTo("readAny", "issue"),
+  getComments
+);
+
 // Post a comment on an issue
 router.put(
-  "/:id/comment",
+  "/:id/comments",
   allowIfLoggedIn,
   hasAccessTo("createAny", "comment"),
   postComment
 );
 
+// Get comments for an issue
+router.get(
+  "/:id/solutions",
+  allowIfLoggedIn,
+  hasAccessTo("readAny", "issue"),
+  getSolutions
+);
+
 // Post a solution on an issue
 router.put(
-  "/:id/solution",
+  "/:id/solutions",
   allowIfLoggedIn,
   hasAccessTo("createOwn", "solution"),
   postSolution

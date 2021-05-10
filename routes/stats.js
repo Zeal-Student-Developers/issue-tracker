@@ -5,7 +5,7 @@ const {
 } = require("../services");
 
 const {
-  statsController: { getIssueStats },
+  statsController: { getIssueStats, getAuthorityStats },
 } = require("../controllers");
 
 router.get(
@@ -13,6 +13,13 @@ router.get(
   allowIfLoggedIn,
   hasAccessTo("readAny", "stats"),
   getIssueStats
+);
+
+router.get(
+  "/authority",
+  allowIfLoggedIn,
+  hasAccessTo("readAny", "stats"),
+  getAuthorityStats
 );
 
 module.exports = router;

@@ -55,8 +55,18 @@ const IssueSchema = new Schema({
   comments: {
     type: [
       {
-        comment: { type: String },
-        createdOn: { type: Date, default: new Date().getTime() },
+        comment: {
+          type: String,
+          required: true,
+        },
+        postedBy: {
+          type: Schema.Types.ObjectId,
+          required: true,
+        },
+        postedOn: {
+          type: Date,
+          default: new Date().getTime(),
+        },
       },
     ],
   },

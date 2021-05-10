@@ -48,7 +48,8 @@
     - [Deleting issue](#deleting-issue)
       - [Delete an issue](#delete-an-issue)
   - [Stats](#stats)
-      - [Get Issues Stats:](#get-issues-stats)
+      - [Get Issues Stats](#get-issues-stats)
+      - [Get Authority Stats](#getting-authority-stats)
 ## Roles
 
 ### Roles with their access rights
@@ -937,12 +938,12 @@ statusCode : 200
 
 ## Stats
 
-#### Get Issues Stats:
+#### Get Issues Stats
 **Method**: **`GET`**
 <br>
 **URL**: **`api/stats/issues`**
 <br>
-**Accessible to**: `All`
+**Accessible to**: `auth_level_three`
 
 **Required parameters**: `None`
 
@@ -970,3 +971,59 @@ statusCode : 200
 }
 
 ```
+
+**[⬆Back to index](#index)**
+
+#### Getting authority stats
+**Method**: **`GET`**
+<br>
+**URL**: **`api/stats/authority`**
+<br>
+**Accessible to**: `auth_level_three`
+
+**Required parameters**: `None`
+
+_Successful Response format_:
+```JSON
+statusCode : 200
+{
+  {
+  "code": "OK",
+  "result": "SUCCESS",
+  "stats": {
+    "totalAuthorityUsers": "count of total authority",
+    "authorityCountByRole": {
+      "auth_level_one": "count",
+      "auth_level_two": "count",
+      "auth_level_three": "count"
+    },
+    "authorityCommentsAndSolutions": [
+      {
+        "name": "Name of authority",
+        "commentsCount": "comments count",
+        "solutionsCount": "solutions count",
+      },
+    ],
+    "distribution": {"comments count"
+      "maxSolutions": {
+        "count": "solutions count",
+        "name": "Name of authority"
+      },
+      "minSolutions": {
+        "count": "solutions count",
+        "name": "Name of authority"
+      },
+      "maxComments": {
+        "count": "comments count",
+        "name": "Name of authority"
+      },
+      "minComments": {
+        "count": "comments count",
+        "name": "Name of authority"
+      }
+    }
+  }
+}
+}
+```
+**[⬆Back to index](#index)**

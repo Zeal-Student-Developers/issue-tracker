@@ -1,4 +1,4 @@
-const { Issue } = require("../models");
+const { Issue, User } = require("../models");
 
 class StatsService {
   constructor() {}
@@ -11,6 +11,20 @@ class StatsService {
     return await Issue.find({
       isDeleted: false,
     }).sort("-upvotes");
+  }
+
+  /**
+   * Finds all authority users
+   * @returns {Promise<Document[]} List of all authority personnels
+   */
+  async getAllAuthority() {
+    return await User.find({
+      $or: [
+        { role: "auth_level_one" },
+        { role: "auth_level_two" },
+        { role: "auth_level_three" },
+      ],
+    });
   }
 }
 

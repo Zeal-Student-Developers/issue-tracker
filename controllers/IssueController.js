@@ -278,11 +278,12 @@ const getCommentsController = async function (req, res) {
 
   const { id } = req.params;
   try {
-    const { comments, department, scope } = await getComments(
-      id,
-      pageNumber,
-      pageLimit
-    );
+    const issue = await getComments(id, pageNumber, pageLimit);
+
+    if (!issue)
+      return res.status(403).send(new Error("BAD_REQUEST", "No issue found"));
+
+    const { comments, department, scope } = issue;
 
     if (
       scope === "ORGANIZATION" ||
@@ -319,11 +320,11 @@ const getSolutionsController = async function (req, res) {
 
   const { id } = req.params;
   try {
-    const solution = await getSolutions(id, pageNumber, pageLimit);
-    if (!solution)
+    const issue = await getSolutions(id, pageNumber, pageLimit);
+    if (!issue)
       return res.status(401).send(new Error("BAD_REQUEST", "No issue found"));
 
-    const { solutions, department, scope } = solution;
+    const { solutions, department, scope } = issue;
 
     if (
       scope === "ORGANIZATION" ||
@@ -650,8 +651,9 @@ const postCommentController = async function (req, res) {
               new Error("BAD_REQUEST", "Please provide a valid comment String")
             );
         }
-        issue.comments.push({ comment: comment.trim() });
+        issue.comments.push({ comment: comment.trim(), postedBy: id });
         await issue.save();
+
         res.status(200).json({
           code: "OK",
           result: "SUCCESS",

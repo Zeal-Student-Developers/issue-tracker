@@ -136,11 +136,17 @@ class IssueService {
     const start = page * limit;
     const end = start + 2 * limit;
 
-    return Issue.findById(id, {
-      comments: { $slice: [start, end] },
+    const issue = await Issue.findById(id, {
+      comments: 1,
       department: 1,
       scope: 1,
     });
+
+    issue.comments = issue.comments
+      .filter(({ isInappropriate }) => !isInappropriate)
+      .slice(start, end);
+
+    return issue;
   }
 
   /**
@@ -156,11 +162,17 @@ class IssueService {
     const start = page * limit;
     const end = start + 2 * limit;
 
-    return Issue.findById(id, {
-      solutions: { $slice: [start, end] },
+    const issue = await Issue.findById(id, {
+      solutions: 1,
       department: 1,
       scope: 1,
     });
+
+    issue.solutions = issue.solutions
+      .filter(({ isInappropriate }) => !isInappropriate)
+      .slice(start, end);
+
+    return issues;
   }
 
   /**
@@ -171,6 +183,7 @@ class IssueService {
    * @param {String[]} images Paths to images for the issue.
    * @param {String} scope Scope of the issue.
    * @param {String} department Department to which the issue belongs.
+   * @param {Boolean} isInappropriate Whether the issue has NFSW content.
    * @param {String} userID userID of the user who created the issue.
    * @returns {Promise<Document>} The newly created Issue.
    */
@@ -181,6 +194,7 @@ class IssueService {
     images,
     department,
     scope,
+    isInappropriate,
     userID
   ) {
     return await Issue.create({
@@ -192,7 +206,7 @@ class IssueService {
       scope: scope,
       isEdited: false,
       isResolved: false,
-      isInappropriate: false,
+      isInappropriate: !!isInappropriate,
       upvotes: 0,
       upvoters: [],
       comments: [],

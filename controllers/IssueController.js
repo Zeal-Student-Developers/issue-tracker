@@ -14,6 +14,7 @@ const {
   },
   FileService: { uploadImages, updateImageIssueId, saveImages },
   UserService: { getUserById },
+  ModeratorService: { hasNSFWText },
 } = require("../services");
 
 const {
@@ -296,7 +297,7 @@ const getCommentsController = async function (req, res) {
         data: {
           hasNextPage: comments.length > limit,
           hasPreviousPage: page > 1,
-          comments,
+          comments: comments.slice(0, limit),
         },
       });
     }
@@ -424,16 +425,40 @@ const addIssueController = async function (req, res) {
     if (errors) {
       res.status(400).send(new Error("BAD_REQUEST", errors));
     } else {
-      const issue = await createIssue(
+      const isNSFW = await hasNSFWText(title, description, scope);
+
+      const { id: issueId } = await createIssue(
         title,
         description,
         section,
         images,
         department,
         scope.toUpperCase(),
+        isNSFW,
         id
       );
-      if (images.length > 0) await updateImageIssueId(images, issue.id);
+
+      if (images.length > 0) await updateImageIssueId(images, issueId);
+
+      if (isNSFW) {
+        const user = await getUserById(id);
+
+        user.violations.push(issueId);
+        if (user.violations.length >= USER_VIOLATIONS_THRESHOLD) {
+          user.isDisabled = true;
+        }
+
+        await user.save();
+
+        return res
+          .status(403)
+          .send(
+            new Error(
+              "FORBIDDEN",
+              "Your post contains content which goes against our Code of Conduct. Please restrain from posted such content. Repeated violations of Code of Conduct may result in you being banned from accessing the system."
+            )
+          );
+      }
 
       res.status(200).json({
         code: "OK",
@@ -442,7 +467,6 @@ const addIssueController = async function (req, res) {
       });
     }
   } catch (error) {
-    console.log(error);
     res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
   }
 };
@@ -464,8 +488,8 @@ const updateIssueController = async function (req, res) {
           .send(new Error("FORBIDDEN", "Action not allowed"));
       }
 
-      title = title?.trim();
-      description = description?.trim();
+      title = title?.trim?.();
+      description = description?.trim?.();
       if (!title && !description) {
         return res
           .status(400)
@@ -483,7 +507,7 @@ const updateIssueController = async function (req, res) {
         message: "Issue updated",
       });
     } else {
-      res.status(400).send(new Error("BAD_REQUEST", "NO issue found"));
+      res.status(400).send(new Error("BAD_REQUEST", "No issue found"));
     }
   } catch (error) {
     res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
@@ -639,6 +663,7 @@ const postCommentController = async function (req, res) {
   const { id, department } = req.user;
   try {
     issue = await getIssueById(req.params.id);
+
     if (issue) {
       if (department !== issue.department && issue.scope !== "ORGANIZATION")
         res.status(403).send(new Error("FORBIDDEN", "Action not allowed"));
@@ -651,8 +676,46 @@ const postCommentController = async function (req, res) {
               new Error("BAD_REQUEST", "Please provide a valid comment String")
             );
         }
-        issue.comments.push({ comment: comment.trim(), postedBy: id });
-        await issue.save();
+
+        const isNSFW = await hasNSFWText(comment);
+
+        issue.comments.push({
+          comment: comment.trim(),
+          postedBy: id,
+          isInappropriate: isNSFW,
+        });
+        const { comments } = await issue.save();
+
+        if (isNSFW) {
+          // Get the _id of latest comment marked as inappropriate
+          const commentId = comments
+            .filter(
+              ({ isInappropriate, postedBy }) =>
+                isInappropriate && postedBy.toString() === id
+            )
+            .sort(
+              ({ postedOn: a }, { postedOn: b }) =>
+                new Date(b).getTime() - new Date(a).getTime()
+            )[0]._id;
+
+          const user = getUserById(id);
+
+          user.violations.push(commentId);
+          if (user.violations.length >= USER_VIOLATIONS_THRESHOLD) {
+            user.isDisabled = true;
+          }
+
+          await user.save();
+
+          return res
+            .status(403)
+            .send(
+              new Error(
+                "FORBIDDEN",
+                "Your comment goes against our Code of Conduct. Please restrain from posted such content. Repeated violations of Code of Conduct may result in you being banned from accessing the system."
+              )
+            );
+        }
 
         res.status(200).json({
           code: "OK",
@@ -684,6 +747,7 @@ const postSolutionController = async function (req, res) {
   const { id, role, department } = req.user;
   try {
     issue = await getIssueById(req.params.id);
+
     if (issue) {
       if (
         ["user", "moderator"].includes(role) ||
@@ -691,11 +755,47 @@ const postSolutionController = async function (req, res) {
       )
         res.status(403).send(new Error("FORBIDDEN", "Action not allowed"));
       else {
+        const isNSFW = await hasNSFWText(solution);
+
         issue.solutions.push({
           solution: solution.trim(),
           postedBy: id,
+          isInappropriate: isNSFW,
         });
-        await issue.save();
+
+        const { solutions } = await issue.save();
+
+        if (isNSFW) {
+          // Get the _id of latest solution marked as inappropriate
+          const solutionId = solutions
+            .filter(
+              ({ isInappropriate, postedBy }) =>
+                isInappropriate && postedBy.toString() === id
+            )
+            .sort(
+              ({ postedOn: a }, { postedOn: b }) =>
+                new Date(b).getTime() - new Date(a).getTime()
+            )[0]._id;
+
+          const user = getUserById(id);
+
+          user.violations.push(solutionId);
+          if (user.violations.length >= USER_VIOLATIONS_THRESHOLD) {
+            user.isDisabled = true;
+          }
+
+          await user.save();
+
+          return res
+            .status(403)
+            .send(
+              new Error(
+                "FORBIDDEN",
+                "Your comment goes against our Code of Conduct. Please restrain from posted such content. Repeated violations of Code of Conduct may result in you being banned from accessing the system."
+              )
+            );
+        }
+
         res.status(200).json({
           code: "OK",
           result: "SUCCESS",
@@ -720,10 +820,12 @@ const deleteIssueController = async function (req, res) {
   const { role, id } = req.user;
   try {
     issue = await getIssueById(req.params.id);
+
     if (issue) {
       if (issue.createdBy.toString() === id || role === "moderator") {
         issue.isDeleted = true;
         await issue.save();
+
         res.status(200).json({
           code: "OK",
           result: "SUCCESS",

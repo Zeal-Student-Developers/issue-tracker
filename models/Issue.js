@@ -67,6 +67,10 @@ const IssueSchema = new Schema({
           type: Date,
           default: new Date().getTime(),
         },
+        isInappropriate: {
+          type: Boolean,
+          default: false,
+        },
       },
     ],
   },
@@ -84,6 +88,10 @@ const IssueSchema = new Schema({
         postedOn: {
           type: Date,
           default: new Date().getTime(),
+        },
+        isInappropriate: {
+          type: Boolean,
+          default: false,
         },
       },
     ],

@@ -3,6 +3,7 @@ const UserService = require("./UserService");
 const IssueService = require("./IssueService");
 const FileService = require("./FileService");
 const StatsService = require("./StatsService");
+const ModeratorService = require("./ModeratorService");
 
 module.exports = {
   JwtService,
@@ -10,4 +11,5 @@ module.exports = {
   IssueService,
   FileService,
   StatsService,
+  ModeratorService,
 };

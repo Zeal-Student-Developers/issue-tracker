@@ -142,6 +142,8 @@ class IssueService {
       scope: 1,
     });
 
+    if (!issue) return null;
+
     issue.comments = issue.comments
       .filter(({ isInappropriate }) => !isInappropriate)
       .slice(start, end);
@@ -167,6 +169,8 @@ class IssueService {
       department: 1,
       scope: 1,
     });
+
+    if (!issue) return null;
 
     issue.solutions = issue.solutions
       .filter(({ isInappropriate }) => !isInappropriate)

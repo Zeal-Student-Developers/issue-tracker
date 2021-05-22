@@ -14,7 +14,7 @@ const {
   },
   FileService: { uploadImages, updateImageIssueId, saveImages },
   UserService: { getUserById },
-  ModeratorService: { hasNSFWText },
+  ModeratorService: { hasNSFWText, hasNSFWImage },
 } = require("../services");
 
 const {
@@ -25,6 +25,8 @@ const {
     issuesHelper: { filterIssueProperties },
   },
 } = require("../misc");
+
+const { FILE_SERVER_URI } = require("../config");
 
 /** Threshold value for reports count on an issue  */
 const ISSUE_REPORTS_THRESHOLD = 75;
@@ -383,18 +385,42 @@ const saveImagesController = function (req, res) {
       const data = await uploadImages(files, id);
       if (data) {
         const paths = [];
-        data.files.forEach(async (file) => {
-          const path = `${process.env.FILE_SERVER_URI}/${file.path}`;
-          paths.push(path);
+        for (let index = 0; index < data.files.length; index++) {
+          const file = data.files[index];
 
-          await Image.create({
-            path,
+          const url = `${FILE_SERVER_URI}/${file.path}`;
+          paths.push(url);
+
+          const { id: imageId } = await Image.create({
+            path: url,
             mimetype: file.mimetype,
             userId: req.user.id,
             issueId: null,
             createdOn: file.createdOn,
           });
-        });
+
+          const isNSFW = await hasNSFWImage(url);
+
+          if (isNSFW) {
+            const user = await getUserById(id);
+
+            user.violations.push(imageId);
+            if (user.violations.length >= USER_VIOLATIONS_THRESHOLD) {
+              user.isDisabled = true;
+            }
+
+            await user.save();
+
+            return res
+              .status(403)
+              .send(
+                new Error(
+                  "FORBIDDEN",
+                  "Your post goes against our Code of Conduct. Please refrain from posted such content. Repeated violations of Code of Conduct may result in you being banned from accessing the system."
+                )
+              );
+          }
+        }
 
         return res.status(200).json({
           code: "OK",
@@ -455,7 +481,7 @@ const addIssueController = async function (req, res) {
           .send(
             new Error(
               "FORBIDDEN",
-              "Your post contains content which goes against our Code of Conduct. Please restrain from posted such content. Repeated violations of Code of Conduct may result in you being banned from accessing the system."
+              "Your post contains content which goes against our Code of Conduct. Please refrain from posted such content. Repeated violations of Code of Conduct may result in you being banned from accessing the system."
             )
           );
       }
@@ -712,7 +738,7 @@ const postCommentController = async function (req, res) {
             .send(
               new Error(
                 "FORBIDDEN",
-                "Your comment goes against our Code of Conduct. Please restrain from posted such content. Repeated violations of Code of Conduct may result in you being banned from accessing the system."
+                "Your comment goes against our Code of Conduct. Please refrain from posted such content. Repeated violations of Code of Conduct may result in you being banned from accessing the system."
               )
             );
         }
@@ -791,7 +817,7 @@ const postSolutionController = async function (req, res) {
             .send(
               new Error(
                 "FORBIDDEN",
-                "Your comment goes against our Code of Conduct. Please restrain from posted such content. Repeated violations of Code of Conduct may result in you being banned from accessing the system."
+                "Your solution goes against our Code of Conduct. Please refrain from posted such content. Repeated violations of Code of Conduct may result in you being banned from accessing the system."
               )
             );
         }

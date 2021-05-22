@@ -50,6 +50,35 @@ class ModeratorService {
       throw new Error("Text Screening Failed");
     }
   }
+
+  /**
+   * Screens a single image for any NSFW content
+   * @param  {String} URL URL to the image
+   * @returns {Promise<Boolean>} Whether the input contains NSFW content
+   */
+  async hasNSFWImage(URL) {
+    try {
+      const { status, data } = await axios.post(
+        `${MODERATOR_API_BASE_URI}/contentmoderator/moderate/v1.0/ProcessImage/Evaluate`,
+        {
+          DataRepresentation: "URL",
+          Value: URL,
+        },
+        {
+          headers: {
+            "Content-type": "application/json",
+            "Ocp-Apim-Subscription-Key": MODERATOR_API_KEY,
+          },
+        }
+      );
+
+      if (status !== 200) throw new Error("Image Screening Failed");
+
+      return data.IsImageAdultClassified || data.IsImageRacyClassified;
+    } catch (error) {
+      throw new Error("Image Screening Failed");
+    }
+  }
 }
 
 module.exports = new ModeratorService();

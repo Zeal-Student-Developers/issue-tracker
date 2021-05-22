@@ -12,6 +12,7 @@ if [ -z "$1" ]
     then
     if [[ $OUT = "Error" ]]; then
         echo "Creating volume nodemodules and mongodatabase"
+        docker volume create file_server
         docker volume create nodemodules
         docker volume create mongodatabase
     else
@@ -21,6 +22,7 @@ if [ -z "$1" ]
 elif [ "$1" = "full" ]; then
     if [[ $OUT = "Error" ]]; then
         echo "Creating volume nodemodules and mongodatabase"
+        docker volume create file_server
         docker volume create nodemodules
         docker volume create mongodatabase
     else
@@ -30,6 +32,7 @@ elif [ "$1" = "full" ]; then
 elif [ "$1" = "volume" ]; then
     if [[ $OUT = "Error" ]]; then
         echo "Creating volume nodemodules and mongodatabase"
+        docker volume create file_server
         docker volume create nodemodules
         docker volume create mongodatabase
     else

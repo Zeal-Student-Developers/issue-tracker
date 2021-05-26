@@ -4,7 +4,7 @@ const { stub } = require("sinon");
 const Issue = require("../../../models/Issue");
 const issueService = require("../../../services/IssueService");
 
-describe("IssueService", () => {
+describe.skip("IssueService", () => {
   // Todo: Add tests for getAllIssues() & getAllIssuesByDepartment()
   //? Not getting how to test the chained mongoose methods
 

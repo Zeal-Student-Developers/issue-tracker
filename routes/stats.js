@@ -1,8 +1,8 @@
 const router = require("express").Router();
 
 const {
-  UserService: { allowIfLoggedIn, hasAccessTo },
-} = require("../services");
+  authHelper: { allowIfLoggedIn, hasAccessTo },
+} = require("../misc/helpers");
 
 const {
   statsController: { getIssueStats, getAuthorityStats },

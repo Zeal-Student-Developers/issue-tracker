@@ -18,10 +18,10 @@ class ModeratorService {
    * @param  {...String} strings An array consisting of strings to screen
    * @returns {Promise<Boolean>} Whether the input contains NSFW content
    */
-  async hasNSFWText(...strings) {
+  static async hasNSFWText(...strings) {
     // TODO: modify to allow strings more than 1024 characters to be
     // screened for NSFW content
-    const text = combineStrings(strings).substr(0, 1024);
+    const text = combineStrings(...strings).substr(0, 1024);
 
     try {
       const { status, data } = await axios.post(
@@ -56,7 +56,7 @@ class ModeratorService {
    * @param  {String} URL URL to the image
    * @returns {Promise<Boolean>} Whether the input contains NSFW content
    */
-  async hasNSFWImage(URL) {
+  static async hasNSFWImage(URL) {
     try {
       const { status, data } = await axios.post(
         `${MODERATOR_API_BASE_URI}/contentmoderator/moderate/v1.0/ProcessImage/Evaluate`,
@@ -81,4 +81,4 @@ class ModeratorService {
   }
 }
 
-module.exports = new ModeratorService();
+module.exports = ModeratorService;

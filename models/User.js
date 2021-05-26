@@ -24,6 +24,13 @@ const UserSchema = new mongoose.Schema({
   },
   role: {
     type: String,
+    enum: [
+      "user",
+      "moderator",
+      "auth_level_one",
+      "auth_level_two",
+      "auth_level_three",
+    ],
     required: true,
   },
   violations: {
@@ -32,6 +39,11 @@ const UserSchema = new mongoose.Schema({
   },
   isDisabled: {
     type: Boolean,
+    default: false,
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false,
   },
   refreshToken: {
     type: String,

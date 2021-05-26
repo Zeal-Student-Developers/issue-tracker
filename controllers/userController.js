@@ -227,7 +227,7 @@ const updateOwnProfileController = async function (req, res, next) {
   const user = validateUpdateUserData(({ firstName, lastName } = req.body));
 
   try {
-    if (Object.keys(req.body).length === 0 || !user) {
+    if (!user) {
       throw new APIError(APIError.BAD_REQUEST, "Please provide some data");
     }
     const { firstName, lastName, department } = user;
@@ -276,7 +276,7 @@ const deleteOwnProfileController = async function (req, res, next) {
  */
 const getUserByIdController = async function (req, res, next) {
   try {
-    const user = await getUserById(req.params.userId);
+    const user = await getUserById(req.params.id);
     if (!user) throw new APIError(APIError.BAD_REQUEST, "No user found");
 
     res.status(200).json({
@@ -339,27 +339,19 @@ const getAllUsersController = async function (req, res, next) {
  */
 const updateAnyProfileController = async function (req, res, next) {
   try {
-    if (Object.keys(req.body).length === 0) {
-      throw new APIError(APIError.BAD_REQUEST, "Please provide some data");
+    const user = validateUpdateUserData(
+      ({ firstName, lastName, department, role } = req.body)
+    );
+
+    if (!user) {
+      throw new APIError(APIError.BAD_REQUEST, "Please provide required data");
     }
 
-    const { firstName, lastName, department, role, password } = req.body;
-    const user = validateUpdateUserData({
-      firstName,
-      lastName,
-      department,
-      role,
-    });
+    const updatedUser = await updateUser({ ...user, id: req.params.id });
 
-    if (!user)
-      throw new APIError(APIError.BAD_REQUEST, "Please provide required data");
-
-    const hashedPassword = password ? bcrypt.hashSync(password, 10) : password;
-    await updateUser({
-      id: req.params.id,
-      password: hashedPassword,
-      ...user,
-    });
+    if (!updatedUser) {
+      throw new APIError(APIError.BAD_REQUEST, "No user found");
+    }
 
     res.status(200).json({
       code: "OK",
@@ -385,7 +377,7 @@ const deleteAnyUserController = async function (req, res, next) {
     res.status(200).json({
       code: "OK",
       result: "SUCCESS",
-      deleted: user,
+      message: "User deleted",
     });
   } catch (error) {
     next(error);

@@ -1,0 +1,486 @@
+[
+  {
+    "description": "Old information reappears or never goes away",
+    "images": ["http://placeimg.com/640/480/technics"],
+    "isEdited": false,
+    "isResolved": false,
+    "isInappropriate": false,
+    "isDeleted": false,
+    "upvoters": [
+      "6098e1ab0382a415472ca733",
+      "6098e1ae0382a415472ca735",
+      "6098e1b00382a415472ca751",
+      "6098e1b20382a415472ca7a3",
+      "6098e1b50382a415472ca7e7",
+      "6098e1b70382a415472ca838"
+    ],
+    "reporters": [],
+    "createdOn": "2020-09-29T02:30:00.000Z",
+    "_id": "60a4c3004b120e716d9c81be",
+    "title": "Incorrect information on your report",
+    "section": "Kansas",
+    "department": "IT",
+    "scope": "DEPARTMENT",
+    "upvotes": 6,
+    "comments": [
+      {
+        "postedOn": "2021-06-16T07:49:21.184Z",
+        "isInappropriate": false,
+        "_id": "60a4c3014b120e716d9c83c6",
+        "comment": "Can't get other flexible options for repaying your loan",
+        "postedBy": "6098e1b10382a415472ca77e"
+      },
+      {
+        "postedOn": "2021-07-11T07:49:21.184Z",
+        "isInappropriate": false,
+        "_id": "60a4c3014b120e716d9c83c7",
+        "comment": "Dealing with your lender or servicer",
+        "postedBy": "6098e1b10382a415472ca77e"
+      },
+      {
+        "postedOn": "2021-06-04T07:49:21.191Z",
+        "isInappropriate": false,
+        "_id": "60a4c3014b120e716d9c8486",
+        "comment": "Old information reappears or never goes away",
+        "postedBy": "6098e1b50382a415472ca7e1"
+      },
+      {
+        "postedOn": "2021-07-23T07:49:21.191Z",
+        "isInappropriate": false,
+        "_id": "60a4c3014b120e716d9c8487",
+        "comment": "Confusing or misleading advertising",
+        "postedBy": "6098e1b50382a415472ca7e1"
+      },
+      {
+        "postedOn": "2021-08-04T07:49:21.191Z",
+        "isInappropriate": false,
+        "_id": "60a4c3014b120e716d9c8488",
+        "comment": "Dealing with your lender or servicer",
+        "postedBy": "6098e1b50382a415472ca7e1"
+      },
+      {
+        "postedOn": "2021-09-23T07:49:21.191Z",
+        "isInappropriate": false,
+        "_id": "60a4c3014b120e716d9c8489",
+        "comment": "Dealing with your lender or servicer",
+        "postedBy": "6098e1b50382a415472ca7e1"
+      },
+      {
+        "postedOn": "2021-10-17T07:49:21.191Z",
+        "isInappropriate": false,
+        "_id": "60a4c3014b120e716d9c848a",
+        "comment": "Struggling to repay your loan",
+        "postedBy": "6098e1b50382a415472ca7e1"
+      },
+      {
+        "postedOn": "2021-11-17T07:49:21.191Z",
+        "isInappropriate": false,
+        "_id": "60a4c3014b120e716d9c848b",
+        "comment": "Dealing with your lender or servicer",
+        "postedBy": "6098e1b50382a415472ca7e1"
+      }
+    ],
+    "solutions": [],
+    "createdBy": "6098e1ae0382a415472ca735",
+    "__v": 0
+  },
+  {
+    "description": "Don't agree with the fees charged",
+    "images": [],
+    "isEdited": false,
+    "isResolved": false,
+    "isInappropriate": false,
+    "isDeleted": false,
+    "upvoters": [
+      "6098e1ab0382a415472ca733",
+      "6098e1ae0382a415472ca735",
+      "6098e1b10382a415472ca77e",
+      "6098e1b50382a415472ca7e7",
+      "6098e1b70382a415472ca838",
+      "6098e1b80382a415472ca853"
+    ],
+    "reporters": [],
+    "createdOn": "2020-03-12T11:30:00.000Z",
+    "_id": "60a4c3004b120e716d9c81c1",
+    "title": "Dealing with your lender or servicer",
+    "section": "Avon",
+    "department": "CSE",
+    "scope": "ORGANIZATION",
+    "upvotes": 6,
+    "comments": [],
+    "solutions": [
+      {
+        "postedOn": "2021-05-22T07:49:21.181Z",
+        "isInappropriate": false,
+        "_id": "60a4c3014b120e716d9c8358",
+        "solution": "Can't get other flexible options for repaying your loan",
+        "postedBy": "6098e1b00382a415472ca751"
+      },
+      {
+        "postedOn": "2021-05-29T07:49:21.181Z",
+        "isInappropriate": false,
+        "_id": "60a4c3014b120e716d9c8359",
+        "solution": "Dealing with your lender or servicer",
+        "postedBy": "6098e1b00382a415472ca751"
+      },
+      {
+        "postedOn": "2021-05-16T07:49:21.181Z",
+        "isInappropriate": false,
+        "_id": "60a4c3014b120e716d9c835a",
+        "solution": "Dealing with your lender or servicer",
+        "postedBy": "6098e1b00382a415472ca751"
+      },
+      {
+        "postedOn": "2021-05-31T07:49:21.181Z",
+        "isInappropriate": false,
+        "_id": "60a4c3014b120e716d9c835b",
+        "solution": "Dealing with your lender or servicer",
+        "postedBy": "6098e1b00382a415472ca751"
+      }
+    ],
+    "createdBy": "6098e1b30382a415472ca7b8",
+    "__v": 0
+  },
+  {
+    "description": "Received bad information about your loan",
+    "images": [
+      "http://placeimg.com/640/480/nature",
+      "http://placeimg.com/640/480/food"
+    ],
+    "isEdited": false,
+    "isResolved": true,
+    "isInappropriate": false,
+    "isDeleted": false,
+    "upvoters": [
+      "6098e1ab0382a415472ca733",
+      "6098e1ae0382a415472ca735",
+      "6098e1b00382a415472ca751",
+      "6098e1b10382a415472ca77e",
+      "6098e1b10382a415472ca784",
+      "6098e1b20382a415472ca7a3",
+      "6098e1b50382a415472ca7e1",
+      "6098e1b50382a415472ca7e7",
+      "6098e1b70382a415472ca833",
+      "6098e1b70382a415472ca838"
+    ],
+    "reporters": [],
+    "createdOn": "2020-05-10T00:30:00.000Z",
+    "_id": "60a4c3004b120e716d9c81c2",
+    "title": "Dealing with your lender or servicer",
+    "section": "dot-com",
+    "department": "IT",
+    "scope": "DEPARTMENT",
+    "upvotes": 10,
+    "comments": [],
+    "solutions": [
+      {
+        "postedOn": "2021-05-18T07:49:21.175Z",
+        "isInappropriate": false,
+        "_id": "60a4c3014b120e716d9c829e",
+        "solution": "Trouble with how payments are being handled",
+        "postedBy": "6098e1ab0382a415472ca733"
+      },
+      {
+        "postedOn": "2021-05-14T07:49:21.175Z",
+        "isInappropriate": false,
+        "_id": "60a4c3014b120e716d9c829f",
+        "solution": "Their investigation did not fix an error on your report",
+        "postedBy": "6098e1ab0382a415472ca733"
+      }
+    ],
+    "createdBy": "6098e1ae0382a415472ca735",
+    "__v": 0
+  },
+  {
+    "description": "I graduated in 2012 and have been making payments monthly for a {$7500.00} Discover Student Loan. My current payoff is {$9800.00}. I have already paid $ XXXX towards this loan. That breaks down into {$1300.00} going towards principal and roughly {$7500.00} paid towards the interest. The interest alone is more than the original loan. So I asked them about lowering my interest rate or allowing me to refinance so that I can pay down more on the principal. The ONLY offer they have for lowering the interest rate is to save a quarter percent by switching to Auto Pay. They will not allow me to refinance with them and because of this loan I can not get another loan to cover it. I will end up paying triple for this loan and not even pay it off until I'm in my 50s.. Please help!",
+    "images": ["http://placeimg.com/640/480/abstract"],
+    "isEdited": false,
+    "isResolved": false,
+    "isInappropriate": false,
+    "isDeleted": false,
+    "upvoters": [
+      "6098e1ae0382a415472ca739",
+      "6098e1af0382a415472ca74b",
+      "6098e1b00382a415472ca764",
+      "6098e1b20382a415472ca799",
+      "6098e1b30382a415472ca7b2",
+      "6098e1b40382a415472ca7db",
+      "6098e1b50382a415472ca7fb",
+      "6098e1b60382a415472ca81a"
+    ],
+    "reporters": [],
+    "createdOn": "2020-03-23T18:30:00.000Z",
+    "_id": "60a4c3004b120e716d9c81c3",
+    "title": "Struggling to repay your loan",
+    "section": "functionalities",
+    "department": "MECH",
+    "scope": "ORGANIZATION",
+    "upvotes": 8,
+    "comments": [],
+    "solutions": [],
+    "createdBy": "6098e1ae0382a415472ca739",
+    "__v": 0
+  },
+  {
+    "description": "This is in reference to a deferred loan that isn't due until XX/XX/2022. \nI have asked the creditor to send a statement about loan with the following information included ; outstanding balance information, amount due and payment due date. I can not resolve any issues with this creditor without this information. I can not access my account. \n\nSallie Mae has sent notification letters about past due account without providing the amount past due or past due date. I need this information to proceed, if necessary. \n\nSallie Mae has refused to provide me with the necessary information to review my account and resolve any issues of payment.",
+    "images": [
+      "http://placeimg.com/640/480/people",
+      "http://placeimg.com/640/480/cats",
+      "http://placeimg.com/640/480/fashion"
+    ],
+    "isEdited": false,
+    "isResolved": false,
+    "isInappropriate": false,
+    "isDeleted": false,
+    "upvoters": [
+      "6098e1ae0382a415472ca739",
+      "6098e1af0382a415472ca74b",
+      "6098e1b00382a415472ca764",
+      "6098e1b00382a415472ca76c",
+      "6098e1b20382a415472ca799",
+      "6098e1b30382a415472ca7b2",
+      "6098e1b40382a415472ca7c7",
+      "6098e1b40382a415472ca7db",
+      "6098e1b60382a415472ca81a"
+    ],
+    "reporters": [],
+    "createdOn": "2020-07-08T22:30:00.000Z",
+    "_id": "60a4c3004b120e716d9c81c4",
+    "title": "Dealing with your lender or servicer",
+    "section": "Multi-channelled",
+    "department": "MECH",
+    "scope": "DEPARTMENT",
+    "upvotes": 9,
+    "comments": [],
+    "solutions": [],
+    "createdBy": "6098e1ae0382a415472ca739",
+    "__v": 0
+  },
+  {
+    "description": "Trouble with how payments are being handled",
+    "images": ["http://placeimg.com/640/480/people"],
+    "isEdited": false,
+    "isResolved": false,
+    "isInappropriate": false,
+    "isDeleted": false,
+    "upvoters": [
+      "6098e1ae0382a415472ca739",
+      "6098e1af0382a415472ca74a",
+      "6098e1af0382a415472ca74b",
+      "6098e1b00382a415472ca76c",
+      "6098e1b30382a415472ca7ac",
+      "6098e1b30382a415472ca7b2",
+      "6098e1b40382a415472ca7cb",
+      "6098e1b40382a415472ca7db",
+      "6098e1b50382a415472ca7f7",
+      "6098e1b50382a415472ca7fb",
+      "6098e1b70382a415472ca823"
+    ],
+    "reporters": [],
+    "createdOn": "2020-05-24T14:30:00.000Z",
+    "_id": "60a4c3004b120e716d9c81c5",
+    "title": "Dealing with your lender or servicer",
+    "section": "grey",
+    "department": "MECH",
+    "scope": "DEPARTMENT",
+    "upvotes": 11,
+    "comments": [
+      {
+        "postedOn": "2021-06-22T07:49:21.186Z",
+        "isInappropriate": false,
+        "_id": "60a4c3014b120e716d9c840e",
+        "comment": "Trouble with how payments are being handled",
+        "postedBy": "6098e1b20382a415472ca799"
+      },
+      {
+        "postedOn": "2021-07-20T07:49:21.186Z",
+        "isInappropriate": false,
+        "_id": "60a4c3014b120e716d9c840f",
+        "comment": "Problem with customer service",
+        "postedBy": "6098e1b20382a415472ca799"
+      },
+      {
+        "postedOn": "2021-07-29T07:49:21.186Z",
+        "isInappropriate": false,
+        "_id": "60a4c3014b120e716d9c8410",
+        "comment": "Trouble with how payments are being handled",
+        "postedBy": "6098e1b20382a415472ca799"
+      },
+      {
+        "postedOn": "2021-08-01T07:49:21.186Z",
+        "isInappropriate": false,
+        "_id": "60a4c3014b120e716d9c8411",
+        "comment": "Account status incorrect",
+        "postedBy": "6098e1b20382a415472ca799"
+      },
+      {
+        "postedOn": "2021-09-14T07:49:21.186Z",
+        "isInappropriate": false,
+        "_id": "60a4c3014b120e716d9c8412",
+        "comment": "Dealing with your lender or servicer",
+        "postedBy": "6098e1b20382a415472ca799"
+      }
+    ],
+    "solutions": [],
+    "createdBy": "6098e1ae0382a415472ca739",
+    "__v": 0
+  },
+  {
+    "description": "Information belongs to someone else",
+    "images": [
+      "http://placeimg.com/640/480/people",
+      "http://placeimg.com/640/480/technics"
+    ],
+    "isEdited": false,
+    "isResolved": false,
+    "isInappropriate": false,
+    "isDeleted": false,
+    "upvoters": [
+      "6098e1ae0382a415472ca739",
+      "6098e1af0382a415472ca74b",
+      "6098e1b00382a415472ca764",
+      "6098e1b00382a415472ca76c",
+      "6098e1b30382a415472ca7b2",
+      "6098e1b40382a415472ca7c7",
+      "6098e1b40382a415472ca7db",
+      "6098e1b70382a415472ca823"
+    ],
+    "reporters": [],
+    "createdOn": "2020-09-07T17:30:00.000Z",
+    "_id": "60a4c3004b120e716d9c81c6",
+    "title": "Incorrect information on your report",
+    "section": "relationships",
+    "department": "MECH",
+    "scope": "ORGANIZATION",
+    "upvotes": 8,
+    "comments": [],
+    "solutions": [],
+    "createdBy": "6098e1ae0382a415472ca739",
+    "__v": 0
+  },
+  {
+    "description": "AES/PHEAA continues to send emails even after I had warned them on multiple occasions to cease and desist with all communications. The person or persons who decide to reply to this, I respectfully ask the CFPB to document who they are to determine if they're even an eligible agent responding or if they are simply taking it upon themselves to violate my Consumer Rights vindictively. I would also ask to see Credentials to verify whoever is responding is legally allowed. Based on recent events where data is breached within companies, I'm not entirely sure I feel comfortable not knowing who exactly is handling these complaints from AES/PHEAA. As far as I'm concerned, it could be someone not affiliated with AES/PHEAA. AES/PHEAA should identify the person or persons handling these complaints, because just labeling themselves as being from the company is not enough to vet their real identity.\n\nI also challenge AES/PHEAA to prove to every borrower who accesses their system that their Online Portal is secure enough to be able to resist intrusions. Until I see proof, there is no convincing me otherwise.",
+    "images": ["http://placeimg.com/640/480/nature"],
+    "isEdited": false,
+    "isResolved": false,
+    "isInappropriate": false,
+    "isDeleted": false,
+    "upvoters": [
+      "6098e1ae0382a415472ca739",
+      "6098e1af0382a415472ca74b",
+      "6098e1b00382a415472ca764",
+      "6098e1b00382a415472ca76c",
+      "6098e1b20382a415472ca78e",
+      "6098e1b20382a415472ca799",
+      "6098e1b30382a415472ca7ac",
+      "6098e1b30382a415472ca7b2",
+      "6098e1b40382a415472ca7c7",
+      "6098e1b40382a415472ca7db",
+      "6098e1b50382a415472ca7f7",
+      "6098e1b50382a415472ca7fb",
+      "6098e1b70382a415472ca823"
+    ],
+    "reporters": [],
+    "createdOn": "2020-04-21T09:30:00.000Z",
+    "_id": "60a4c3004b120e716d9c8215",
+    "title": "Dealing with your lender or servicer",
+    "section": "seize",
+    "department": "MECH",
+    "scope": "DEPARTMENT",
+    "upvotes": 13,
+    "comments": [
+      {
+        "postedOn": "2021-05-27T07:49:21.179Z",
+        "isInappropriate": false,
+        "_id": "60a4c3014b120e716d9c8321",
+        "comment": "Received bad information about your loan",
+        "postedBy": "6098e1af0382a415472ca74a"
+      },
+      {
+        "postedOn": "2021-06-10T07:49:21.179Z",
+        "isInappropriate": false,
+        "_id": "60a4c3014b120e716d9c8322",
+        "comment": "A forbearance was granted to me on XX/XX/20 due to COVID-19 that was lasting through XX/XX/20. This forbearance allowed me to withhold my payments up until that time. In XX/XX/2020, I received a notification that my credit score decreased substantially due to having a late payment report listed for my student loans. This has impacted me greatly in an endeavor I am currently undertaking that is determined by my credit score. Please help me correct this and also let me know if there are any steps that can be taken for the impact this has had on me ( i.e. compensation ).",
+        "postedBy": "6098e1af0382a415472ca74a"
+      },
+      {
+        "postedOn": "2021-07-01T07:49:21.179Z",
+        "isInappropriate": false,
+        "_id": "60a4c3014b120e716d9c8323",
+        "comment": "Dealing with your lender or servicer",
+        "postedBy": "6098e1af0382a415472ca74a"
+      },
+      {
+        "postedOn": "2021-08-17T07:49:21.179Z",
+        "isInappropriate": false,
+        "_id": "60a4c3014b120e716d9c8324",
+        "comment": "To whom it may concern : My name is XXXX XXXX XXXX. \nA student loan payment of {$410.00} sent by my employer, The University XXXX XXXX, on my behalf on XX/XX/XXXX, to Pioneer Credit Recovery has not been applied to my student loan account, although the check was cashed over a year. The check was shown to be cashed on XX/XX/XXXX, by Pioneer Credit Recovery. \nI have been having my wages garnished by the XXXX XXXX XXXX for my federal student loans since XX/XX/XXXX, and collected by Pioneer Credit Recovery Inc. \nPioneer credit Recovery has instructed me that they only process the wage garnishment order, and that all payments are sent directly to The   XXXX XXXX XXXX  of The Department of Education, and that I needed to contact the Wage Garnishment Department of The XXXX XXXX XXXX in order to get information on my loan payments.. \nI was told by Pioneer Credit Recovery to contact The XXXX XXXX   XXXX XXXX XXXX Department of The Department Of Education by calling XXXX - XXXX - XXXX to get information on the missing payment. \nOn XX/XX/XXXX, at the request of the XXXX  of the DOE, I mailed the requested copy of the front and back of the check that the University XXXX XXXX deducted from my paycheck and paid on XX/XX/XXXX for my student loan payment, and shown to be cashed on XX/XX/XXXX. The XXXX XXXX XXXX/Wage Garnishment Department stated that they received proof of payment on XX/XX/XXXX. I was told that the payment would be applied to my account within 4 business days, and that I would be sent a corrected XXXX Student Loan Interest Statement.  As of today, XX/XX/XXXX, The XXXX XXXX XXXX still has not credited my account for the payment of {$410.00}, or sent me a XXXX updated and corrected Student Loan Interest Statement, although they have received proof of payment from my employer, in the form of the front and back of the check, and breakdown of when it was cashed. \nI am at a loss on what to do at this point. \nIn summary, my goal is to have my student loan payment of {$410.00} credited to my account for XXXX, and to also receive an updated XXXX Student Loan Interest Statement. \n\nRespectfully, XXXX XXXX XXXX XXXX XXXX XXXX",
+        "postedBy": "6098e1af0382a415472ca74a"
+      }
+    ],
+    "solutions": [],
+    "createdBy": "6098e1b30382a415472ca7b2",
+    "__v": 0
+  },
+  {
+    "description": "Trouble with how payments are being handled",
+    "images": [
+      "http://placeimg.com/640/480/city",
+      "http://placeimg.com/640/480/nature"
+    ],
+    "isEdited": false,
+    "isResolved": false,
+    "isInappropriate": false,
+    "isDeleted": false,
+    "upvoters": [
+      "6098e1af0382a415472ca747",
+      "6098e1b20382a415472ca78f",
+      "6098e1b40382a415472ca7d1",
+      "6098e1b40382a415472ca7d6",
+      "6098e1b50382a415472ca7fc",
+      "6098e1b70382a415472ca82d",
+      "6098e1b80382a415472ca84f"
+    ],
+    "reporters": [],
+    "createdOn": "2020-02-29T19:30:00.000Z",
+    "_id": "60a4c3004b120e716d9c8216",
+    "title": "Dealing with your lender or servicer",
+    "section": "contextually-based",
+    "department": "CSE",
+    "scope": "ORGANIZATION",
+    "upvotes": 7,
+    "comments": [
+      {
+        "postedOn": "2021-05-11T07:49:21.191Z",
+        "isInappropriate": false,
+        "_id": "60a4c3014b120e716d9c8477",
+        "comment": "Dealing with your lender or servicer",
+        "postedBy": "6098e1b40382a415472ca7d6"
+      },
+      {
+        "postedOn": "2021-05-28T07:49:21.191Z",
+        "isInappropriate": false,
+        "_id": "60a4c3014b120e716d9c8478",
+        "comment": "Dealing with your lender or servicer",
+        "postedBy": "6098e1b40382a415472ca7d6"
+      },
+      {
+        "postedOn": "2021-05-16T07:49:21.191Z",
+        "isInappropriate": false,
+        "_id": "60a4c3014b120e716d9c8479",
+        "comment": "Confusing or misleading advertising",
+        "postedBy": "6098e1b40382a415472ca7d6"
+      },
+      {
+        "postedOn": "2021-05-19T07:49:21.191Z",
+        "isInappropriate": false,
+        "_id": "60a4c3014b120e716d9c847a",
+        "comment": "Dealing with your lender or servicer",
+        "postedBy": "6098e1b40382a415472ca7d6"
+      }
+    ],
+    "solutions": [],
+    "createdBy": "6098e1b30382a415472ca7b8",
+    "__v": 0
+  }
+]

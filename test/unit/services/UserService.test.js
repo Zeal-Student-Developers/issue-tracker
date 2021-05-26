@@ -6,6 +6,10 @@ const UserService = require("../../../services/UserService");
 const User = require("../../../models/User");
 const AccessControl = require("accesscontrol");
 
+const {
+  authHelper: { hasAccessTo, allowIfLoggedIn },
+} = require("../../../misc/helpers");
+
 describe("UserService", () => {
   describe("getAllUsers()", () => {
     let stub;
@@ -255,8 +259,7 @@ describe("UserService", () => {
 
       try {
         const updatedUser = await UserService.updateUser(userDoc);
-
-        expect.fail("It should fail with an error.");
+        expect(updatedUser).to.be.null;
       } catch (err) {
         expect(stub.calledOnce).to.be.true;
         expect(err.message).to.eql("Error");
@@ -268,11 +271,9 @@ describe("UserService", () => {
 
       try {
         const updatedUser = await UserService.updateUser(userDoc);
-
-        expect.fail("It should fail with an error");
+        expect(updatedUser).to.be.null;
       } catch (err) {
         expect(stub.calledOnce).to.be.true;
-        expect(err.message).to.eql("No user found");
       }
     });
 
@@ -312,12 +313,10 @@ describe("UserService", () => {
 
       try {
         const updatedUser = await UserService.updateUser(userDoc);
-
-        expect.fail("It should fail with an error");
+        expect(updatedUser).to.be.null;
       } catch (err) {
         expect(stub.calledOnce).to.be.true;
         expect(userStub.calledOnce).to.be.true;
-        expect(err.message).to.eql("Some error");
       }
     });
   });
@@ -330,7 +329,7 @@ describe("UserService", () => {
     });
 
     it("returns an error if res.locals.loggedInUser is undefined", async () => {
-      const retval = await UserService.allowIfLoggedIn(
+      const retval = allowIfLoggedIn(
         {},
         {
           locals: { loggedInUser: undefined },
@@ -346,18 +345,14 @@ describe("UserService", () => {
     });
 
     it("calls next() without any error if res.locals.loggedInUser is set", async () => {
-      await UserService.allowIfLoggedIn(
-        {},
-        { locals: { loggedInUser: "Some User" } },
-        nextSpy
-      );
+      allowIfLoggedIn({}, { locals: { loggedInUser: "Some User" } }, nextSpy);
 
       expect(nextSpy.calledOnce).to.be.true;
       expect(nextSpy.getCall(0).args).to.be.empty;
     });
 
     it("calls next() with an error passed to it if loggedInUser is not set", async () => {
-      await UserService.allowIfLoggedIn({}, {}, nextSpy);
+      allowIfLoggedIn({}, {}, nextSpy);
 
       expect(nextSpy.calledOnce).to.be.true;
       expect(nextSpy.getCall(0).args[0]).to.exist;
@@ -380,7 +375,7 @@ describe("UserService", () => {
     it("calls next() without any error if role has permission granted", async () => {
       rolesStub.returns({ updateOwn: sinon.stub().returns({ granted: true }) });
 
-      await UserService.hasAccessTo("updateOwn", "something")(
+      await hasAccessTo("updateOwn", "something")(
         { user: { role: "somerole" } },
         {},
         nextSpy
@@ -395,7 +390,7 @@ describe("UserService", () => {
         updateOwn: sinon.stub().returns({ granted: false }),
       });
 
-      await UserService.hasAccessTo("updateOwn", "something")(
+      await hasAccessTo("updateOwn", "something")(
         { user: { role: "somerole" } },
         {},
         nextSpy

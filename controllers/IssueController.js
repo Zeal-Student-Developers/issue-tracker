@@ -21,7 +21,7 @@ const {
 
 const {
   validations: {
-    issueValidations: { validateUserData },
+    issueValidations: { validateIssueData, validateIssueUpdateData },
   },
   helpers: {
     issuesHelper: { filterIssueProperties },
@@ -124,7 +124,11 @@ const getIssueByIdController = async function (req, res, next) {
     issue = await getIssueById(req.params.id);
     if (!issue) throw new APIError(APIError.BAD_REQUEST, "No issue found");
 
-    if (issue.department !== department && role !== "auth_level_three") {
+    if (
+      issue.department !== department &&
+      issue.scope !== "ORGANIZATION" &&
+      role !== "auth_level_three"
+    ) {
       throw new APIError(APIError.FORBIDDEN, "Action not allowed");
     }
 
@@ -293,7 +297,8 @@ const getSolutionsController = async function (req, res, next) {
 
     const solutionList = [];
 
-    for (let index = 0; index < limit; index++) {
+    const length = limit < solutions.length ? limit : solutions.length;
+    for (let index = 0; index < length; index++) {
       const { solution, postedBy, postedOn } = solutions[index];
       const { firstName, lastName } = await getUserById(postedBy);
       solutionList.push({
@@ -400,10 +405,16 @@ const addIssueController = async function (req, res, next) {
   const { title, description, images, section, scope } = req.body;
   const { department, id } = req.user;
   try {
-    const errors = validateUserData(title, description, images, section, scope);
+    const errors = validateIssueData(
+      title,
+      description,
+      images,
+      section,
+      scope
+    );
     if (errors) throw new APIError(APIError.BAD_REQUEST, errors);
 
-    const isNSFW = await hasNSFWText(title, description, scope);
+    const isNSFW = await hasNSFWText(title, description, section);
 
     const { id: issueId } = await createIssue(
       title,
@@ -452,7 +463,6 @@ const addIssueController = async function (req, res, next) {
  */
 const updateIssueController = async function (req, res, next) {
   const { id: userId } = req.user;
-  let { title, description } = req.body;
   try {
     const issue = await getIssueById(req.params.id);
     if (!issue) throw new APIError(APIError.BAD_REQUEST, "No issue found");
@@ -461,8 +471,11 @@ const updateIssueController = async function (req, res, next) {
       throw new APIError(APIError.FORBIDDEN, "Action not allowed");
     }
 
-    title = title?.trim?.();
-    description = description?.trim?.();
+    const { title, description } = validateIssueUpdateData({
+      title: req.body.title,
+      description: req.body.description,
+    });
+
     if (!title && !description) {
       throw new APIError(APIError.BAD_REQUEST, "Please provide some data");
     }
@@ -470,6 +483,27 @@ const updateIssueController = async function (req, res, next) {
     issue.title = title || issue.title;
     issue.description = description || issue.description;
     issue.isEdited = true;
+
+    const isNSFW = await hasNSFWText(title, description);
+    if (isNSFW) {
+      const user = await getUserById(userId);
+
+      issue.isInappropriate = true;
+      user.violations.push(issue.id);
+      if (user.violations.length >= USER_VIOLATIONS_THRESHOLD) {
+        user.isDisabled = true;
+      }
+
+      issue.isInappropriate = true;
+
+      await user.save();
+      await issue.save();
+
+      throw new APIError(
+        APIError.FORBIDDEN,
+        "Your post goes against our Code of Conduct. Please refrain from posted such content. Repeated violations of Code of Conduct may result in you being banned from accessing the system."
+      );
+    }
 
     await issue.save();
     res.status(200).json({
@@ -521,31 +555,33 @@ const toggleResolveStatusController = async function (req, res, next) {
  */
 const toggleUpvoteController = async function (req, res, next) {
   let issue = null;
-  const { department, id: userId } = req.user;
+  const { department, id: userId, role } = req.user;
   try {
     issue = await getIssueById(req.params.id);
     if (!issue) throw new APIError(APIError.BAD_REQUEST, "No issue found");
 
-    if (department !== issue.department && issue.scope !== "ORGANIZATION")
+    if (
+      department !== issue.department &&
+      issue.scope !== "ORGANIZATION" &&
+      role !== "auth_level_three"
+    )
       throw new APIError(APIError.FORBIDDEN, "Action not allowed");
 
-    let userAlreadyUpvoted = false;
-    if (issue.upvoters.findIndex((id) => id.toString() === userId)) {
-      issue.upvotes++;
-      issue.upvoters.push(userId);
-    } else {
-      userAlreadyUpvoted = true;
-      issue.upvotes--;
+    let userUpvoted = true;
+    if (issue.upvoters.find((id) => id.toString() === userId)) {
+      userUpvoted = false;
+      issue.upvotes -= 1;
       issue.upvoters = issue.upvoters.filter((id) => id.toString() !== userId);
+    } else {
+      issue.upvotes += 1;
+      issue.upvoters.push(userId);
     }
 
     await issue.save();
     res.status(200).json({
       code: "OK",
       result: "SUCCESS",
-      message: userAlreadyUpvoted
-        ? "Removed upvote from issue"
-        : "Upvoted issue",
+      message: userUpvoted ? "Issue upvoted" : "Upvote removed from issue",
     });
   } catch (error) {
     next(error);
@@ -634,7 +670,7 @@ const postCommentController = async function (req, res, next) {
     if (!comment?.trim()) {
       throw new APIError(
         APIError.BAD_REQUEST,
-        "Please provide a valid comment string"
+        "Please provide a valid comment"
       );
     }
 
@@ -659,7 +695,7 @@ const postCommentController = async function (req, res, next) {
             new Date(b).getTime() - new Date(a).getTime()
         )[0]._id;
 
-      const user = getUserById(id);
+      const user = await getUserById(id);
 
       user.violations.push(commentId);
       if (user.violations.length >= USER_VIOLATIONS_THRESHOLD) {
@@ -680,6 +716,7 @@ const postCommentController = async function (req, res, next) {
       message: "Comment posted",
     });
   } catch (error) {
+    // console.log(error);
     next(error);
   }
 };
@@ -692,24 +729,21 @@ const postCommentController = async function (req, res, next) {
  */
 const postSolutionController = async function (req, res, next) {
   try {
-    const { solution } = req.body;
-    if (!solution?.trim()) {
-      throw new APIError(
-        APIError.BAD_REQUEST,
-        "Please provide a valid solution string"
-      );
-    }
-
     const { id, role, department } = req.user;
 
     const issue = await getIssueById(req.params.id);
     if (!issue) throw new APIError(APIError.BAD_REQUEST, "No issue found");
 
-    if (
-      ["user", "moderator"].includes(role) ||
-      (role === "auth_level_one" && department !== issue.department)
-    )
+    if (role === "auth_level_one" && department !== issue.department)
       throw new APIError(APIError.FORBIDDEN, "Action not allowed");
+
+    const { solution } = req.body;
+    if (!solution?.trim()) {
+      throw new APIError(
+        APIError.BAD_REQUEST,
+        "Please provide a valid solution"
+      );
+    }
 
     const isNSFW = await hasNSFWText(solution);
 
@@ -733,7 +767,7 @@ const postSolutionController = async function (req, res, next) {
             new Date(b).getTime() - new Date(a).getTime()
         )[0]._id;
 
-      const user = getUserById(id);
+      const user = await getUserById(id);
 
       user.violations.push(solutionId);
       if (user.violations.length >= USER_VIOLATIONS_THRESHOLD) {
@@ -744,7 +778,6 @@ const postSolutionController = async function (req, res, next) {
 
       throw new APIError(
         APIError.FORBIDDEN,
-        "FORBIDDEN",
         "Your comment goes against our Code of Conduct. Please refrain from posted such content. Repeated violations of Code of Conduct may result in you being banned from accessing the system."
       );
     }
@@ -766,12 +799,15 @@ const postSolutionController = async function (req, res, next) {
  * @param {Express.NextFunction} next Express Next Function
  */
 const deleteIssueController = async function (req, res, next) {
-  const { role, id } = req.user;
+  const { role, id, department } = req.user;
   try {
     const issue = await getIssueById(req.params.id);
     if (!issue) throw new APIError(APIError.BAD_REQUEST, "No issue found");
 
-    if (issue.createdBy.toString() !== id && role !== "moderator") {
+    if (
+      (issue.createdBy.toString() !== id && role !== "moderator") ||
+      (role === "moderator" && department !== issue.department)
+    ) {
       throw new APIError(APIError.FORBIDDEN, "Action not allowed");
     }
 

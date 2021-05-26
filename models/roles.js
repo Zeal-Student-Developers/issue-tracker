@@ -18,8 +18,10 @@ exports.roles = (() => {
   ac.grant("auth_level_one")
     .readOwn("profile")
     .updateOwn("profile")
+    .updateOwn("issue")
     .deleteOwn("profile")
     .readAny("issue")
+    .updateAny("issue")
     .createAny("comment")
     .createOwn("solution");
 

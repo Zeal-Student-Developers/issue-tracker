@@ -14,9 +14,6 @@ const {
   issueRoutes,
   statsRoutes,
 } = require("../routes");
-const {
-  helpers: { logging },
-} = require("../misc");
 
 /**
  * Express middleware to verify the JWT token passed in the `authorization`

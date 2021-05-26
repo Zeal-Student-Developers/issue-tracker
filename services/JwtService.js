@@ -1,5 +1,10 @@
 const jwt = require("jsonwebtoken");
-const { validateToken, validatePayload } = require("../misc/validation/jwt");
+
+const {
+  jwtValidations: { validateToken, validatePayload },
+} = require("../misc/validation");
+
+const { JWT_SECRET, TOKEN_LIFE } = require("../config");
 
 class JwtService {
   constructor() {}
@@ -11,13 +16,11 @@ class JwtService {
    */
   sign(payload) {
     const error = validatePayload(payload);
-    if (error) {
-      throw new Error(error);
-    } else {
-      return jwt.sign(payload, process.env.SECRET, {
-        expiresIn: process.env.TOKEN_LIFE,
-      });
-    }
+    if (error) throw new Error(error);
+
+    return jwt.sign(payload, JWT_SECRET, {
+      expiresIn: TOKEN_LIFE,
+    });
   }
 
   /**
@@ -27,12 +30,10 @@ class JwtService {
    */
   verify(authHeader) {
     const error = validateToken(authHeader);
-    if (error) {
-      throw new Error(error);
-    } else {
-      const token = authHeader.split(" ")[1];
-      return jwt.verify(token, process.env.SECRET);
-    }
+    if (error) throw new Error(error);
+
+    const token = authHeader.split(" ")[1];
+    return jwt.verify(token, JWT_SECRET);
   }
 
   /**
@@ -42,12 +43,10 @@ class JwtService {
    */
   decode(authHeader) {
     const error = validateToken(authHeader);
-    if (error) {
-      throw new Error(error);
-    } else {
-      const token = authHeader.split(" ")[1];
-      return jwt.decode(token);
-    }
+    if (error) throw new Error(error);
+
+    const token = authHeader.split(" ")[1];
+    return jwt.decode(token);
   }
 }
 

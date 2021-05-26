@@ -27,6 +27,26 @@ class IssueService {
   }
 
   /**
+   * Finds all the issues from the database by their resolve status.
+   * @param {Number} page Page number of the search result, used as offset
+   * from the beginning of the database
+   * @param {Number} limit Limit of number of search elements returned at a
+   * time
+   * @returns {Promise<Document[]>} List of all the issues.
+   */
+  async getAllIssuesByResolveStatus(isResolved = false, page = 0, limit = 10) {
+    return await Issue.find({
+      isResolved,
+      isInappropriate: false,
+      isDeleted: false,
+    })
+      .skip(page * limit)
+      /* Twice the limit so as to check if more elemenst are available for
+        next fetch */
+      .limit(2 * limit);
+  }
+
+  /**
    * Finds all the issues by the specified department.
    * @param {String} dept Department to get the issues from.
    * @param {Number} page Page number of the search result, used as offset
@@ -40,6 +60,32 @@ class IssueService {
       isInappropriate: false,
       isDeleted: false,
       $or: [{ department: dept }, { scope: "ORGANIZATION" }],
+    })
+      .sort("-upvotes")
+      .skip(page * limit)
+      .limit(2 * limit);
+  }
+
+  /**
+   * Finds all the issues by the specified department and resolve status.
+   * @param {String} dept Department to get the issues from.
+   * @param {Number} page Page number of the search result, used as offset
+   * from the beginning of the database
+   * @param {Number} limit Limit of number of search elements returned at a
+   * time
+   * @returns {Promise<Document[]>} List of all the issues by specified department.
+   */
+  async getAllIssuesByDepartmentAndResolveStatus(
+    dept,
+    isResolved = false,
+    page = 0,
+    limit = 10
+  ) {
+    return await Issue.find({
+      $or: [{ department: dept }, { scope: "ORGANIZATION" }],
+      isResolved,
+      isInappropriate: false,
+      isDeleted: false,
     })
       .sort("-upvotes")
       .skip(page * limit)

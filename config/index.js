@@ -2,7 +2,7 @@ require("dotenv").config();
 
 const config = {
   MONGO: process.env.MONGO,
-  MONGO_TEST: process.env.MONGO_DUMMY,
+  MONGO_TEST: process.env.MONGO_TEST,
   ENV: process.env.NODE_ENV,
   JWT_SECRET: process.env.SECRET,
   TOKEN_LIFE: process.env.TOKEN_LIFE,

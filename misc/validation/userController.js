@@ -57,15 +57,19 @@ const validateUserData = function (
  */
 const validatePasswords = function (oldPassoword, newPassword) {
   const schema = Joi.object({
-    oldPassword: Joi.string().required(),
-    newPassword: Joi.string().required().min(6),
+    _old: Joi.string().required(),
+    _new: Joi.string()
+      .required()
+      .min(6)
+      .rule({ message: "New password must be atleast 6 characters long" }),
   }).options({ abortEarly: false });
 
-  const { error } = schema.validate({ oldPassoword, newPassword });
+  const { error } = schema.validate({ _old: oldPassoword, _new: newPassword });
 
   if (error) {
     const errors = {};
     error.details.forEach(({ path, message }) => (errors[path] = message));
+    return errors;
   }
 
   return undefined;
@@ -76,10 +80,17 @@ const validatePasswords = function (oldPassoword, newPassword) {
  * @param {Object} userObject User object containing multiple fields
  * @returns Object containing valid fields
  */
-const validateUpdateUserData = function (userObject) {
+const validateUpdateUserData = function ({
+  firstName,
+  lastName,
+  password,
+  department,
+  role,
+}) {
+  const userObject = { firstName, lastName, password, department, role };
   const user = {};
   for (const key in userObject) {
-    if (!!userObject[key]?.trim()) {
+    if (!!userObject[key]?.trim?.()) {
       user[key] = userObject[key];
     }
   }

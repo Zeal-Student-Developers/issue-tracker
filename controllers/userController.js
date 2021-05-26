@@ -2,7 +2,7 @@ const bcrypt = require("bcryptjs");
 const { readFileSync, unlinkSync } = require("fs");
 const { parse } = require("papaparse");
 
-const { Error } = require("../models");
+const { APIError } = require("../models");
 
 const {
   UserService: { getUserById, getAllUsers, createUser, updateUser, deleteUser },
@@ -20,27 +20,26 @@ const {
  * Controller to handle get own profile user
  * @param {Request} req
  * @param {Response} res
+ * @param {Express.NextFunction} next Express Next Function
  */
-const getOwnProfileController = async function (req, res) {
+const getOwnProfileController = async function (req, res, next) {
   const { id } = req.user;
   try {
     const user = await getUserById(id);
-    if (!user) {
-      res.status(400).json(new Error("BAD_REQUEST", "No user found"));
-    } else {
-      res.status(200).json({
-        code: "OK",
-        result: "SUCCESS",
-        user: {
-          userId: user.userId,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          department: user.department,
-        },
-      });
-    }
+    if (!user) throw new APIError(APIError.BAD_REQUEST, "No user found");
+
+    res.status(200).json({
+      code: "OK",
+      result: "SUCCESS",
+      user: {
+        userId: user.userId,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        department: user.department,
+      },
+    });
   } catch (error) {
-    res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
+    next(error);
   }
 };
 
@@ -48,8 +47,9 @@ const getOwnProfileController = async function (req, res) {
  * Controller to handle add user
  * @param {Request} req
  * @param {Response} res
+ * @param {Express.NextFunction} next Express Next Function
  */
-const addUserController = async function (req, res) {
+const addUserController = async function (req, res, next) {
   const { userId, firstName, lastName, password, department, role } = req.body;
   try {
     const errors = validateUserData(
@@ -60,29 +60,27 @@ const addUserController = async function (req, res) {
       department,
       role
     );
-    if (errors) {
-      res.status(400).send(new Error("BAD_REQUEST", errors));
-    } else {
-      const salt = bcrypt.genSaltSync(10);
-      const hashedPassword = bcrypt.hashSync(password, salt);
+    if (errors) throw new APIError(APIError.BAD_REQUEST, errors);
 
-      await createUser(
-        userId,
-        firstName,
-        lastName,
-        hashedPassword,
-        department,
-        role
-      );
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = bcrypt.hashSync(password, salt);
 
-      res.status(200).json({
-        code: "CREATED",
-        result: "SUCCESS",
-        message: "User added",
-      });
-    }
+    await createUser(
+      userId,
+      firstName,
+      lastName,
+      hashedPassword,
+      department,
+      role
+    );
+
+    res.status(200).json({
+      code: "CREATED",
+      result: "SUCCESS",
+      message: "User added",
+    });
   } catch (error) {
-    res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
+    next(error);
   }
 };
 
@@ -90,141 +88,131 @@ const addUserController = async function (req, res) {
  * Controller for adding users from csv file
  * @param {Request} req Request Object
  * @param {Response} res Response Object
+ * @param {Express.NextFunction} next Express Next Function
  */
-const addUsersFromFileController = async function (req, res) {
-  const file = req.file;
-  if (!file) {
-    res
-      .status(400)
-      .send(new Error("BAD_REQUEST", "Please provide a data file"));
-    return;
-  }
-  let dataString = undefined;
-  let users = [];
+const addUsersFromFileController = async function (req, res, next) {
   try {
-    dataString = readFileSync(file.path).toString();
-    const { data } = parse(dataString);
-    users = data.slice(1, -1);
-  } catch (error) {
-    return res
-      .status(500)
-      .send(new Error("INTERNAL_SERVER_ERROR", error.message));
-  } finally {
-    unlinkSync(file.path);
-  }
+    const file = req.file;
+    if (!file)
+      throw new APIError(APIError.BAD_REQUEST, "Please provide a data file");
 
-  // Array to store userId of users having inappropriate/insufficient data
-  const erroneousUsers = [];
-
-  users.forEach((user) => {
-    const [userId, firstName, lastName, password, department, role] = user;
-    const errors = validateUserData(
-      userId,
-      firstName,
-      lastName,
-      password,
-      department,
-      role
-    );
-    if (errors) erroneousUsers.push(userId);
-  });
-
-  if (erroneousUsers.length > 0) {
-    return res
-      .status(400)
-      .send(
-        new Error(
-          "BAD_REQUEST",
-          `Users with userId [${erroneousUsers.join(
-            ", "
-          )}] have inappropriate/insufficient data`
-        )
-      );
-  }
-
-  users.forEach(async (user) => {
-    const [userID, firstName, lastName, password, department, role] = user;
-
-    const salt = bcrypt.genSaltSync(10);
-    const hashedPassword = bcrypt.hashSync(password, salt);
+    let dataString = undefined;
+    let users = [];
 
     try {
-      await createUser(
-        userID,
+      dataString = readFileSync(file.path).toString();
+      const { data } = parse(dataString);
+      users = data.slice(1, -1);
+    } catch (error) {
+      throw new APIError(APIError.INTERNAL_SERVER_ERROR, error.message);
+    } finally {
+      unlinkSync(file.path);
+    }
+
+    // Array to store userId of users having inappropriate/insufficient data
+    const erroneousUsers = [];
+
+    users.forEach((user) => {
+      const [userId, firstName, lastName, password, department, role] = user;
+      const errors = validateUserData(
+        userId,
         firstName,
         lastName,
-        hashedPassword,
+        password,
         department,
-        role.toLowerCase()
+        role
       );
-    } catch (error) {
-      erroneousUsers.push(userId);
+      if (errors) erroneousUsers.push(userId);
+    });
+
+    if (erroneousUsers.length > 0) {
+      throw new APIError(
+        APIError.BAD_REQUEST,
+        `Users with userId [${erroneousUsers.join(
+          ", "
+        )}] have inappropriate/insufficient data`
+      );
     }
-  });
-  res.status(200).json({
-    code: "CREATED",
-    result: "SUCCESS",
-    message: "User profiles created",
-  });
+
+    users.forEach(async (user) => {
+      const [userID, firstName, lastName, password, department, role] = user;
+
+      const salt = bcrypt.genSaltSync(10);
+      const hashedPassword = bcrypt.hashSync(password, salt);
+
+      try {
+        await createUser(
+          userID,
+          firstName,
+          lastName,
+          hashedPassword,
+          department,
+          role.toLowerCase()
+        );
+      } catch (error) {
+        erroneousUsers.push(userId);
+      }
+    });
+
+    res.status(200).json({
+      code: "CREATED",
+      result: "SUCCESS",
+      message: "User profiles created",
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 /**
  * Controller to handle update user's own passoword
  * @param {Request} req
  * @param {Response} res
+ * @param {Express.NextFunction} next Express Next Function
  */
-const updateOwnPasswordController = async function (req, res) {
+const updateOwnPasswordController = async function (req, res, next) {
   const { id } = req.user;
   try {
     const { oldPassword: old, newPassword: _new } = req.body;
+
     const errors = validatePasswords(old, _new);
-    if (errors) {
-      res.status(400).send(new Error("BAD_REQUEST", errors));
-    } else {
-      const oldPassword = old.trim();
-      const newPassword = _new.trim();
+    if (errors) throw new APIError(APIError.BAD_REQUEST, errors);
 
-      if (oldPassword === newPassword) {
-        res
-          .status(400)
-          .send(
-            new Error(
-              "BAD_REQUEST",
-              "New password should be different from previous password"
-            )
-          );
-        return;
-      }
-      try {
-        const user = await getUserById(id);
-        if (user) {
-          const match = bcrypt.compareSync(oldPassword, user.password);
-          if (match) {
-            const hashedPassword = bcrypt.hashSync(newPassword, 10);
-            await updateUser({
-              id: id,
-              password: hashedPassword,
-            });
+    const oldPassword = old.trim();
+    const newPassword = _new.trim();
 
-            res.status(200).json({
-              code: "OK",
-              result: "SUCCESS",
-              message: "Password updated",
-            });
-          } else {
-            res
-              .status(400)
-              .send(new Error("BAD_REQUEST", "Incorrect Password"));
-          }
-        } else {
-          res.status(400).send(new Error("BAD_REQUEST", "No user found"));
-        }
-      } catch (err) {
-        res.status(400).send(new Error("BAD_REQUEST", err.message));
-      }
+    if (oldPassword === newPassword) {
+      throw new APIError(
+        APIError.BAD_REQUEST,
+        "New password should be different from previous password"
+      );
     }
+
+    const user = await getUserById(id);
+    if (!user) throw new APIError(APIError.BAD_REQUEST, "No user found");
+
+    const match = bcrypt.compareSync(oldPassword, user.password);
+    if (!match) throw new APIError(APIError.BAD_REQUEST, "Incorrect password");
+
+    let hashedPassword = null;
+    try {
+      hashedPassword = bcrypt.hashSync(newPassword, 10);
+    } catch (err) {
+      throw new APIError(APIError.INTERNAL_SERVER_ERROR, err.message);
+    }
+
+    await updateUser({
+      id: id,
+      password: hashedPassword,
+    });
+
+    res.status(200).json({
+      code: "OK",
+      result: "SUCCESS",
+      message: "Password updated",
+    });
   } catch (error) {
-    res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
+    next(error);
   }
 };
 
@@ -232,37 +220,32 @@ const updateOwnPasswordController = async function (req, res) {
  * Controller to handle update user's profile
  * @param {Request} req
  * @param {Response} res
+ * @param {Express.NextFunction} next Express Next Function
  */
-const updateOwnProfileController = async function (req, res) {
+const updateOwnProfileController = async function (req, res, next) {
   const { id } = req.user;
+  const user = validateUpdateUserData(({ firstName, lastName } = req.body));
+
   try {
-    if (Object.keys(req.body).length === 0) {
-      res.status(400).send(new Error("BAD_REQUEST", "Insufficient data"));
-    } else {
-      const { firstName, lastName, department } = req.body;
-
-      // User should not be updated if no data is provided to update
-      if (!(firstName?.trim() && lastName?.trim() && department?.trim())) {
-        return res
-          .status(400)
-          .send(new Error("BAD_REQUEST", "Please provide required data"));
-      }
-
-      await updateUser({
-        id,
-        firstName: firstName?.trim(),
-        lastName: lastName?.trim(),
-        department: department?.trim(),
-      });
-
-      res.status(200).json({
-        code: "OK",
-        result: "SUCCESS",
-        message: "User updated",
-      });
+    if (Object.keys(req.body).length === 0 || !user) {
+      throw new APIError(APIError.BAD_REQUEST, "Please provide some data");
     }
+    const { firstName, lastName, department } = user;
+
+    await updateUser({
+      id,
+      firstName,
+      lastName,
+      department,
+    });
+
+    res.status(200).json({
+      code: "OK",
+      result: "SUCCESS",
+      message: "User updated",
+    });
   } catch (error) {
-    res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
+    next(error);
   }
 };
 
@@ -270,8 +253,9 @@ const updateOwnProfileController = async function (req, res) {
  * Controller to delete user's own profile
  * @param {Request} req
  * @param {Response} res
+ * @param {Express.NextFunction} next Express Next Function
  */
-const deleteOwnProfileController = async function (req, res) {
+const deleteOwnProfileController = async function (req, res, next) {
   try {
     await deleteUser(req.user.id);
     res.status(200).json({
@@ -280,7 +264,7 @@ const deleteOwnProfileController = async function (req, res) {
       message: "User deleted",
     });
   } catch (error) {
-    res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
+    next(error);
   }
 };
 
@@ -288,27 +272,26 @@ const deleteOwnProfileController = async function (req, res) {
  * Controller to handle get user by userId
  * @param {Request} req
  * @param {Response} res
+ * @param {Express.NextFunction} next Express Next Function
  */
-const getUserByIdController = async function (req, res) {
+const getUserByIdController = async function (req, res, next) {
   try {
-    const user = await getUserById(req.params.id);
-    if (!user) {
-      res.status(400).send(new Error("BAD_REQUEST", "No user found"));
-    } else {
-      res.status(200).json({
-        code: "OK",
-        result: "SUCCESS",
-        user: {
-          userID: user.userID,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          department: user.department,
-          role: user.role,
-        },
-      });
-    }
+    const user = await getUserById(req.params.userId);
+    if (!user) throw new APIError(APIError.BAD_REQUEST, "No user found");
+
+    res.status(200).json({
+      code: "OK",
+      result: "SUCCESS",
+      user: {
+        userID: user.userID,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        department: user.department,
+        role: user.role,
+      },
+    });
   } catch (error) {
-    res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
+    next(error);
   }
 };
 
@@ -316,8 +299,9 @@ const getUserByIdController = async function (req, res) {
  * Controller to handle get all users
  * @param {Request} req
  * @param {Response} res
+ * @param {Express.NextFunction} next Express Next Function
  */
-const getAllUsersController = async function (req, res) {
+const getAllUsersController = async function (req, res, next) {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 5;
 
@@ -343,7 +327,7 @@ const getAllUsersController = async function (req, res) {
       },
     });
   } catch (error) {
-    res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
+    next(error);
   }
 };
 
@@ -351,44 +335,39 @@ const getAllUsersController = async function (req, res) {
  * Controller to handle update any user by id
  * @param {Request} req
  * @param {Response} res
+ * @param {Express.NextFunction} next Express Next Function
  */
-const updateAnyProfileController = async function (req, res) {
+const updateAnyProfileController = async function (req, res, next) {
   try {
     if (Object.keys(req.body).length === 0) {
-      res
-        .status(400)
-        .send(new Error("BAD_REQUEST", "Required fields not provided"));
-    } else {
-      const { firstName, lastName, department, role, password } = req.body;
-      const user = validateUpdateUserData({
-        firstName,
-        lastName,
-        department,
-        role,
-      });
-      if (!user) {
-        return res
-          .status(400)
-          .send(new Error("BAD_REQUEST", "Please provide required data"));
-      }
-      const hashedPassword = password
-        ? bcrypt.hashSync(password, 10)
-        : password;
-      await updateUser({
-        id: req.params.id,
-        password: hashedPassword,
-        ...user,
-      });
-
-      res.status(200).json({
-        code: "OK",
-        result: "SUCCESS",
-        message: "User updated",
-      });
+      throw new APIError(APIError.BAD_REQUEST, "Please provide some data");
     }
+
+    const { firstName, lastName, department, role, password } = req.body;
+    const user = validateUpdateUserData({
+      firstName,
+      lastName,
+      department,
+      role,
+    });
+
+    if (!user)
+      throw new APIError(APIError.BAD_REQUEST, "Please provide required data");
+
+    const hashedPassword = password ? bcrypt.hashSync(password, 10) : password;
+    await updateUser({
+      id: req.params.id,
+      password: hashedPassword,
+      ...user,
+    });
+
+    res.status(200).json({
+      code: "OK",
+      result: "SUCCESS",
+      message: "User updated",
+    });
   } catch (error) {
-    console.log(error);
-    res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
+    next(error);
   }
 };
 
@@ -396,21 +375,20 @@ const updateAnyProfileController = async function (req, res) {
  * Controller to delete user by id
  * @param {Request} req
  * @param {Response} res
+ * @param {Express.NextFunction} next Express Next Function
  */
-const deleteAnyUserController = async function (req, res) {
+const deleteAnyUserController = async function (req, res, next) {
   try {
     const user = await deleteUser(req.params.id);
-    if (!user) {
-      res.status(400).send(new Error("BAD_REQUEST", "No user found"));
-    } else {
-      res.status(200).json({
-        code: "OK",
-        result: "SUCCESS",
-        deleted: user,
-      });
-    }
+    if (!user) throw new APIError(APIError.BAD_REQUEST, "No user found");
+
+    res.status(200).json({
+      code: "OK",
+      result: "SUCCESS",
+      deleted: user,
+    });
   } catch (error) {
-    res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
+    next(error);
   }
 };
 

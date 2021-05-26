@@ -1,5 +1,3 @@
-const { Error } = require("../models");
-
 const {
   helpers: {
     statsHelper: { getMonthName },
@@ -15,18 +13,12 @@ const {
  * Controller to get issue stats based on resolve status
  * @param {Request} req Request Object
  * @param {Response} res Response Object
+ * @param {Express.NextFunction}
  */
-const getIssueStatsController = async function (req, res) {
-  const { id, role } = req.user;
-
-  if (role !== "auth_level_three") {
-    res.status(403).send(new Error("FORBIDDEN", "Action not allowed"));
-    return;
-  }
+const getIssueStatsController = async function (req, res, next) {
+  const { id } = req.user;
 
   try {
-    const issues = await getAllIssues();
-
     let resolvedIssuesCount = 0;
     let violatingIssuesCount = 0;
     let unresolvedIssuesCount = 0;
@@ -35,6 +27,8 @@ const getIssueStatsController = async function (req, res) {
     const issuesPostedByMonth = {};
     const issuesByDepartment = {};
     const violators = [];
+
+    const issues = await getAllIssues();
 
     issues.forEach((issue) => {
       const { isInappropriate, isResolved, department } = issue;
@@ -93,7 +87,7 @@ const getIssueStatsController = async function (req, res) {
       },
     });
   } catch (error) {
-    res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
+    next(error);
   }
 };
 
@@ -101,23 +95,17 @@ const getIssueStatsController = async function (req, res) {
  * Controller to get authority stats
  * @param {Request} req Request Object
  * @param {Response} res Response Object
+ * @param {Express.NextFunction}
  */
-const getAuthorityStatsController = async function (req, res) {
-  const { role } = req.user;
-
-  if (role !== "auth_level_three") {
-    res.status(403).send(new Error("FORBIDDEN", "Action not allowed"));
-    return;
-  }
-
-  const authorityCountByRole = {
-    auth_level_one: 0,
-    auth_level_two: 0,
-    auth_level_three: 0,
-  };
-
-  const authorityCommentsAndSolutions = {};
+const getAuthorityStatsController = async function (_, res, next) {
   try {
+    const authorityCountByRole = {
+      auth_level_one: 0,
+      auth_level_two: 0,
+      auth_level_three: 0,
+    };
+
+    const authorityCommentsAndSolutions = {};
     const users = await getAllAuthority();
 
     users.forEach(({ id, firstName, lastName, role }) => {
@@ -208,7 +196,7 @@ const getAuthorityStatsController = async function (req, res) {
       },
     });
   } catch (error) {
-    res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
+    next(error);
   }
 };
 

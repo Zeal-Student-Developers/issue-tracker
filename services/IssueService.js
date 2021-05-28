@@ -14,12 +14,36 @@ class IssueService {
    * time
    * @returns {Promise<Document[]>} List of all the issues.
    */
-  async getAllIssues(page = 0, limit = 10) {
+  static async getAllIssues(page = 0, limit = 10) {
     return await Issue.find({
       isInappropriate: false,
       isDeleted: false,
     })
       .sort("-upvotes")
+      .skip(page * limit)
+      /* Twice the limit so as to check if more elemenst are available for
+        next fetch */
+      .limit(2 * limit);
+  }
+
+  /**
+   * Finds all the issues from the database by their resolve status.
+   * @param {Number} page Page number of the search result, used as offset
+   * from the beginning of the database
+   * @param {Number} limit Limit of number of search elements returned at a
+   * time
+   * @returns {Promise<Document[]>} List of all the issues.
+   */
+  static async getAllIssuesByResolveStatus(
+    isResolved = false,
+    page = 0,
+    limit = 10
+  ) {
+    return await Issue.find({
+      isResolved,
+      isInappropriate: false,
+      isDeleted: false,
+    })
       .skip(page * limit)
       /* Twice the limit so as to check if more elemenst are available for
         next fetch */
@@ -35,7 +59,7 @@ class IssueService {
    * time
    * @returns {Promise<Document[]>} List of all the issues by specified department.
    */
-  async getAllIssuesByDepartment(dept, page = 0, limit = 10) {
+  static async getAllIssuesByDepartment(dept, page = 0, limit = 10) {
     return await Issue.find({
       isInappropriate: false,
       isDeleted: false,
@@ -47,13 +71,40 @@ class IssueService {
   }
 
   /**
+   * Finds all the issues by the specified department and resolve status.
+   * @param {String} dept Department to get the issues from.
+   * @param {Number} page Page number of the search result, used as offset
+   * from the beginning of the database
+   * @param {Number} limit Limit of number of search elements returned at a
+   * time
+   * @returns {Promise<Document[]>} List of all the issues by specified department.
+   */
+  static async getAllIssuesByDepartmentAndResolveStatus(
+    dept,
+    isResolved = false,
+    page = 0,
+    limit = 10
+  ) {
+    return await Issue.find({
+      $or: [{ department: dept }, { scope: "ORGANIZATION" }],
+      isResolved,
+      isInappropriate: false,
+      isDeleted: false,
+    })
+      .sort("-upvotes")
+      .skip(page * limit)
+      .limit(2 * limit);
+  }
+
+  /**
    * Finds the issue with specific ID.
    * @param {String} id ID of the issue to find.
    * @returns {Promise<Document>} Issue with the specified ID.
    */
-  async getIssueById(id) {
+  static async getIssueById(id) {
     return await Issue.findOne({
       _id: id,
+      isInappropriate: false,
       isDeleted: false,
     });
   }
@@ -63,9 +114,10 @@ class IssueService {
    * @param {String} id ID of the user.
    * @returns {Promise<Document[]>} Issue created by the specified user.
    */
-  async getIssuesByUserId(id, page = 0, limit = 10) {
+  static async getIssuesByUserId(id, page = 0, limit = 10) {
     return await Issue.find({
       createdBy: id,
+      isInappropriate: false,
       isDeleted: false,
     })
       .skip(page * limit)
@@ -81,7 +133,7 @@ class IssueService {
    * time
    * @returns {Promise<Document[]>} List of issues containing given keywords.
    */
-  async getAllIssuesByPhrase(phrase, page = 0, limit = 10) {
+  static async getAllIssuesByPhrase(phrase, page = 0, limit = 10) {
     const keywords = phrase.trim().replace(/[\s\n]+/gi, "|");
     const regex = new RegExp(keywords, "gi");
     const issues = await Issue.find({
@@ -103,7 +155,7 @@ class IssueService {
    * time
    * @returns {Promise<Document[]>} List of issues containing given keywords.
    */
-  async getAllIssuesByPhraseAndDepartment(
+  static async getAllIssuesByPhraseAndDepartment(
     phrase,
     department,
     page = 0,
@@ -132,7 +184,7 @@ class IssueService {
    * time
    * @returns {Promise<Document[]>} List of issues containing given keywords.
    */
-  async getComments(id, page = 0, limit = 10) {
+  static async getComments(id, page = 0, limit = 10) {
     const start = page * limit;
     const end = start + 2 * limit;
 
@@ -160,7 +212,7 @@ class IssueService {
    * time
    * @returns {Promise<Document[]>} List of issues containing given keywords.
    */
-  async getSolutions(id, page = 0, limit = 10) {
+  static async getSolutions(id, page = 0, limit = 10) {
     const start = page * limit;
     const end = start + 2 * limit;
 
@@ -176,7 +228,7 @@ class IssueService {
       .filter(({ isInappropriate }) => !isInappropriate)
       .slice(start, end);
 
-    return issues;
+    return issue;
   }
 
   /**
@@ -191,7 +243,7 @@ class IssueService {
    * @param {String} userID userID of the user who created the issue.
    * @returns {Promise<Document>} The newly created Issue.
    */
-  async createIssue(
+  static async createIssue(
     title,
     description,
     section,
@@ -225,7 +277,7 @@ class IssueService {
    * @param updatedIssue The object with updated issue properties.
    * @returns {Promise<Document>} The updated issue.
    */
-  async updateIssue(updatedIssue) {
+  static async updateIssue(updatedIssue) {
     const issue = await Issue.findById(updatedIssue.id);
     if (issue) {
       issue.name = updatedIssue.name || issue.name;
@@ -270,7 +322,7 @@ class IssueService {
    * @param {String} id ID of the issue to be deleted.
    * @returns {Promise<Document>} The deleted issue.
    */
-  async deleteIssue(id) {
+  static async deleteIssue(id) {
     return await Issue.findByIdAndUpdate(
       id,
       { isDeleted: true },
@@ -279,4 +331,4 @@ class IssueService {
   }
 }
 
-module.exports = new IssueService();
+module.exports = IssueService;

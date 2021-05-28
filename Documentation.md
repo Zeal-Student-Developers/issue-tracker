@@ -34,9 +34,8 @@
     - [Getting Issues](#getting-issues)
       - [Getting All Issues](#getting-all-issues)
       - [Get all issues](#get-all-issues)
-      - [Get all resolved issues](#get-all-resolved-issues)
-      - [Get all unresolved issues](#get-all-unresolved-issues)
-      - [Get issues by phrase:](#get-issues-by-phrase)
+      - [Get all issue by resolved status](#get-issues-by-resolved-status)
+      - [Get issues by phrase](#get-issues-by-phrase)
       - [Get issue by ID](#get-issue-by-id)
       - [Get issues by created by currently logged in user](#get-issues-by-created-by-currently-logged-in-user)
       - [Getting comments](#getting-comments)
@@ -422,8 +421,7 @@ statusCode: 200
 ```JSON
 {
   "firstName":"<updated firstName>",
-  "lastName":"<updated lastName>",
-  "department":"<updated department>",
+  "lastName":"<updated lastName>"
 }
 ```
 >**Note**: The currently logged in user can only update their firstName, lastName & department. Only those fields must be passed that are updated, rest must be left undefined.
@@ -454,7 +452,6 @@ statusCode: 200
 {
   "firstName": "<user's first name>",
   "lastName": "<user's last name>",
-  "password": "<user's password>",
   "department": "<user's department>",
   "role": "<user's role>",
 }
@@ -495,7 +492,7 @@ statusCode: 200
 {
   "code": "OK",
   "result": "SUCCESS",
-  "deleted": "<deleted user>",
+  "message": "User deleted",
 }
 ```
 **[⬆Back to index](#index)**
@@ -659,12 +656,12 @@ statusCode : 200
 ```
 **[⬆Back to index](#index)**
 
-#### Get all resolved issues
-> Returns a list of all unresolved issues only.
+#### Get issues by resolved status
+> Returns a list of all issues by their resolved status. You can change `page` and/or `limit`.
 
 **Method**: **`GET`**
 <br>
-**URL**: **`api/issues/all/resolved?page=[page_number]&limit=[search_limit]`**
+**URL**: **`api/issues/status?resolved=true&page=1&limit=5`**
 <br>
 **Accessible to**: `All`
 
@@ -685,36 +682,10 @@ statusCode : 200
 ```
 **[⬆Back to index](#index)**
 
-#### Get all unresolved issues
-> Returns a list of all unresolved issues only.
-
+#### Get issues by phrase
 **Method**: **`GET`**
 <br>
-**URL**: **`api/issues/all/unresolved?page=[page_number]&limit=[search_limit]`**
-<br>
-**Accessible to**: `All`
-
-**Required parameters**: `None`
-
-_Successful Response format_:
-```JSON
-statusCode : 200
-{
-  "code": "OK",
-  "result": "SUCCESS",
-  "data": {
-    "hasNextPage": "[Whether next page is available to fetch]",
-    "hasPreviousPage": "[Whether previos page is available to fetch]",
-    "issues":"[List of Issues]",
-  },
-}
-```
-**[⬆Back to index](#index)**
-
-#### Get issues by phrase:
-**Method**: **`GET`**
-<br>
-**URL**: **`api/issues/phrase?phrase=[search_phrase]&page=[page_number]&limit=[search_limit]`**
+**URL**: **`api/issues/phrase?phrase=[phrase]&page=1&limit=5`**
 <br>
 **Accessible to**: `All`
 
@@ -756,7 +727,7 @@ statusCode : 200
 #### Get issues by created by currently logged in user 
 **Method**: **`GET`**
 <br>
-**URL**: **`api/issues/own?page=[page_number]&limit=[search_limit]`**
+**URL**: **`api/issues/own?page=1&limit=5`**
 <br>
 **Accessible to**: `All`
 
@@ -780,7 +751,7 @@ statusCode : 200
 #### Getting comments
 **Method**: **`GET`**
 <br>
-**URL**: **`api/issues/:id/comments?page=[page_number]&limit=[page_limit]`**
+**URL**: **`api/issues/:id/comments?page=1&limit=5`**
 <br>
 **Accessible to**: `All`
 
@@ -855,7 +826,28 @@ statusCode : 200
 {
   "code": "OK",
   "result": "SUCCESS",
-  "message": "Resolve status updated",
+  "message": "'Issue marked as resolved' or 'Issue marked as unresolved'",
+}
+```
+**[⬆Back to index](#index)**
+> **Note:** Only the student who created the issue or user with role `student_moderator` can toggle issue resolve status.
+
+#### Toggle upvote on resolve
+**Method**: **`PUT`**
+<br>
+**URL**: **`api/:id/upvote`**
+<br>
+**Accessible to**: `All`
+
+**Required parameters**: `id` of the issue in the request URL itself.
+
+_Successful Response format_:
+```JSON
+statusCode : 200
+{
+  "code": "OK",
+  "result": "SUCCESS",
+  "message": "'Issue upvoted' or 'Upvote removed from issue'",
 }
 ```
 **[⬆Back to index](#index)**
@@ -865,7 +857,7 @@ statusCode : 200
 #### Post a comment on issue
 **Method**: **`PUT`**
 <br>
-**URL**: **`api/issues/:id/comment`**
+**URL**: **`api/issues/:id/comments`**
 <br>
 **Accessible to**: `All`
 
@@ -891,7 +883,7 @@ statusCode : 200
 #### Post a solution on issue
 **Method**: **`PUT`**
 <br>
-**URL**: **`api/issues/:id/solution`**
+**URL**: **`api/issues/:id/solutions`**
 <br>
 **Accessible to**: `auth_level_two` & above
 

@@ -3,8 +3,7 @@ const router = require("express").Router();
 const {
   issueController: {
     getAllIssues,
-    getAllResolvedIssues,
-    getAllUnresolvedIssues,
+    getAllIssuesByStatus,
     getIssueById,
     getIssuesByUser,
     getIssuesByPhrase,
@@ -23,8 +22,8 @@ const {
 } = require("../controllers");
 
 const {
-  UserService: { allowIfLoggedIn, hasAccessTo },
-} = require("../services");
+  authHelper: { allowIfLoggedIn, hasAccessTo },
+} = require("../misc/helpers");
 
 router.get(
   "/own",
@@ -41,20 +40,12 @@ router.get(
   getAllIssues
 );
 
-// Get all resolved issues
+// Get all issues by resolve status
 router.get(
-  "/all/resolved",
+  "/status",
   allowIfLoggedIn,
   hasAccessTo("readAny", "issue"),
-  getAllResolvedIssues
-);
-
-// Get all unresolved issues
-router.get(
-  "/all/unresolved",
-  allowIfLoggedIn,
-  hasAccessTo("readAny", "issue"),
-  getAllUnresolvedIssues
+  getAllIssuesByStatus
 );
 
 // Get issues by keywords

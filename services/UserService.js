@@ -1,7 +1,5 @@
 const User = require("../models/User");
 const randomBytes = require("crypto").randomBytes;
-const Error = require("../models/Error");
-const { roles } = require("../models/roles");
 
 /**
  * Class for handling CRUD operations on `users`
@@ -19,7 +17,14 @@ class UserService {
    * @param {String} role User's role
    * @returns {Promise<Document>} Newly created user
    */
-  async createUser(userId, firstName, lastName, password, department, role) {
+  static async createUser(
+    userId,
+    firstName,
+    lastName,
+    password,
+    department,
+    role
+  ) {
     return await User.create({
       userId,
       role,
@@ -41,7 +46,7 @@ class UserService {
    * time
    * @returns {Promise<Document[]>} List of all users
    */
-  async getAllUsers(page = 0, limit = 10) {
+  static async getAllUsers(page = 0, limit = 10) {
     return await User.find({ isDisabled: false })
       .skip(page * limit)
       /* Twice the limit so as to check if more elemenst are available for
@@ -54,7 +59,7 @@ class UserService {
    * @param {String} userId userId of the user
    * @returns {Promise<Document>} User with given userId
    */
-  async getUserByUserId(userId) {
+  static async getUserByUserId(userId) {
     return await User.findOne({ userId });
   }
 
@@ -63,7 +68,7 @@ class UserService {
    * @param {String} id Document ID of the user
    * @returns {Promise<Document>} User with specified ID
    */
-  async getUserById(id) {
+  static async getUserById(id) {
     return await User.findById(id);
   }
 
@@ -72,18 +77,16 @@ class UserService {
    * @param {Object} newUser Object containing updated user details
    * @returns {Promise<Document>} Updated user object
    */
-  async updateUser(newUser) {
+  static async updateUser(newUser) {
     const { id, firstName, lastName, password, department, role } = newUser;
     const user = await User.findById(id);
-    if (user === null) {
-      throw new Error("BAD_REQUEST", "No user found");
-    } else {
-      user.firstName = firstName || user.firstName;
-      user.lastName = lastName || user.lastName;
-      user.password = password || user.password;
-      user.department = department || user.department;
-      user.role = role || user.role;
-    }
+    if (user === null) return null;
+
+    user.firstName = firstName || user.firstName;
+    user.lastName = lastName || user.lastName;
+    user.password = password || user.password;
+    user.department = department || user.department;
+    user.role = role || user.role;
 
     return await user.save();
   }
@@ -92,7 +95,7 @@ class UserService {
    * Deletes all users from the database
    * @returns {Promise<Number} Number of deleted users
    */
-  async deleteAllUsers() {
+  static async deleteAllUsers() {
     return (await User.updateMany(null, { isDisabled: true })).nModified;
   }
 
@@ -101,70 +104,9 @@ class UserService {
    * @param {String} id ID of the user to delete
    * @returns {Promise<Document>} Deleted user object
    */
-  async deleteUser(id) {
-    return await User.findByIdAndUpdate(
-      id,
-      { isDisabled: true },
-      { new: true }
-    );
+  static async deleteUser(id) {
+    return await User.findByIdAndUpdate(id, { isDeleted: true }, { new: true });
   }
-
-  /**
-   * Express middleware for checking if user is logged in. Stores the current
-   * user from `res.locals.loggedInUser` to `req.user` for passing it further to
-   * next callbacks.
-   */
-  async allowIfLoggedIn(req, res, next) {
-    try {
-      const user = res.locals.loggedInUser;
-      if (!user) {
-        return res
-          .status(401)
-          .json(new Error("BAD_REQUEST", "You need to be logged in"));
-      }
-      req.user = user;
-      next();
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  /**
-   * Express middleware to check if `req.user` has enough permissions to
-   * perform an action. Always needs the `allowIfLoggedIn` middleware to be
-   * passed prior to using this
-   */
-  hasAccessTo = (act, resource) => {
-    return async (req, res, next) => {
-      try {
-        if (req.user.isDisabled) {
-          return res
-            .status(403)
-            .send(
-              new Error(
-                "FORBIDDEN",
-                "You have been blocked by the system for repeated violations of the Code of Conduct"
-              )
-            );
-        }
-
-        const perm = roles.can(req.user.role)[act](resource);
-        if (!perm.granted) {
-          return res
-            .status(403)
-            .json(
-              new Error(
-                "FORBIDDEN",
-                "You are not authorized to perform the action"
-              )
-            );
-        }
-        next();
-      } catch (error) {
-        next(error);
-      }
-    };
-  };
 }
 
-module.exports = new UserService();
+module.exports = UserService;

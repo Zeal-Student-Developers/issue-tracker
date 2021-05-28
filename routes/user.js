@@ -1,9 +1,12 @@
 const router = require("express").Router();
 
 const {
-  UserService: { allowIfLoggedIn, hasAccessTo },
   FileService: { saveCsv },
 } = require("../services");
+
+const {
+  authHelper: { allowIfLoggedIn, hasAccessTo },
+} = require("../misc/helpers");
 
 const {
   userController: {
@@ -88,7 +91,7 @@ router.get(
  * AUTHORITY: GET USER BY USEID.
  */
 router.get(
-  "/:userId",
+  "/:id",
   allowIfLoggedIn,
   hasAccessTo("readAny", "profile"),
   getUserById
@@ -98,7 +101,7 @@ router.get(
  * AUTHORITY: UPDATE USER DETAILS [ALL]
  */
 router.post(
-  "/update/profile/:userID",
+  "/update/profile/:id",
   allowIfLoggedIn,
   hasAccessTo("updateAny", "profile"),
   updateAnyUserById
@@ -108,7 +111,7 @@ router.post(
  * AUTHORITY: DELETE A USER PROFILE [ALL]
  */
 router.delete(
-  "/:userID",
+  "/:id",
   allowIfLoggedIn,
   hasAccessTo("deleteAny", "profile"),
   deleteAnyUserById

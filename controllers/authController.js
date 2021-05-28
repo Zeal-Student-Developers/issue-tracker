@@ -1,6 +1,6 @@
 const bcrypt = require("bcryptjs");
 
-const { Error } = require("../models");
+const { APIError } = require("../models");
 
 const {
   UserService: { getUserByUserId, getUserById },
@@ -15,55 +15,47 @@ const {
  * Controller for handling login
  * @param {Request} req
  * @param {Response} res
+ * @param {Express.NextFunction}
  */
-const loginController = async (req, res) => {
+const loginController = async (req, res, next) => {
   try {
     const { userId, password } = req.body;
-    const errors = validateCredentials(userId, password);
-    if (errors) {
-      res.status(400).send(new Error("BAD_REQUEST", errors));
-    } else {
-      const user = await getUserByUserId(userId);
-      if (!user) {
-        res.status(400).send(new Error("BAD_REQUEST", "No user found"));
-      } else {
-        if (user.isDisabled) {
-          return res
-            .status(403)
-            .send(
-              new Error(
-                "FORBIDDEN",
-                "You have been blocked by the system for repeated violations of the Code of Conduct"
-              )
-            );
-        }
-        const match = bcrypt.compareSync(password, user.password);
-        if (match) {
-          let token = null;
-          try {
-            token = sign({
-              userID: user.id,
-              department: user.department,
-              role: user.role,
-            });
-          } catch (error) {
-            res.status(403).send(new Error("FORBIDDEN", error.message));
-            return;
-          }
 
-          res.status(200).json({
-            code: "OK",
-            result: "SUCCESS",
-            token: token,
-            refreshToken: user.refreshToken,
-          });
-        } else {
-          res.status(403).send(new Error("FORBIDDEN", "Password incorrect"));
-        }
-      }
+    const errors = validateCredentials(userId, password);
+    if (errors) throw new APIError(APIError.BAD_REQUEST, errors);
+
+    const user = await getUserByUserId(userId);
+    if (!user) throw new APIError(APIError.BAD_REQUEST, "No user found");
+
+    if (user.isDisabled) {
+      throw new APIError(
+        APIError.FORBIDDEN,
+        "You have been blocked by the system for repeated violations of the Code of Conduct"
+      );
     }
+
+    const match = bcrypt.compareSync(password, user.password);
+    if (!match) throw new APIError(APIError.FORBIDDEN, "Password incorrect");
+
+    let token = null;
+    try {
+      token = sign({
+        userID: user.id,
+        department: user.department,
+        role: user.role,
+      });
+    } catch (error) {
+      throw new APIError(APIError.FORBIDDEN, error.message);
+    }
+
+    res.status(200).json({
+      code: "OK",
+      result: "SUCCESS",
+      token,
+      refreshToken: user.refreshToken,
+    });
   } catch (error) {
-    res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
+    next(error);
   }
 };
 
@@ -71,48 +63,45 @@ const loginController = async (req, res) => {
  * Controller for handling refresh JWT token
  * @param {Request} req
  * @param {Response} res
+ * @param {Express.NextFunction}
  */
-const refreshTokenController = async (req, res) => {
-  let userID = null;
+const refreshTokenController = async (req, res, next) => {
   try {
-    userID = decode(req.headers["authorization"]).userID;
-  } catch (error) {
-    res.status(403).send(new Error("FORBIDDEN", error.message));
-    return;
-  }
-  try {
-    const user = await getUserById(userID);
-    if (!user) {
-      res.status(401).send(new Error("BAD_REQUEST", "No user found"));
-    } else {
-      if (user.isDisabled) {
-        return res
-          .status(403)
-          .send(
-            new Error(
-              "FORBIDDEN",
-              "You have been blocked by the system for repeated violations of the Code of Conduct"
-            )
-          );
-      }
-      if (user.refreshToken === req.body.refreshToken) {
-        const token = sign({
-          userID: userID,
-          department: user.department,
-          role: user.role,
-        });
+    let userID = null;
 
-        res.status(200).json({
-          code: "OK",
-          result: "SUCCESS",
-          token,
-        });
-      } else {
-        res.status(403).send(new Error("FORBIDDEN", "Invalid refresh token"));
-      }
+    try {
+      userID = decode(req.headers["authorization"]).userID;
+    } catch (error) {
+      throw new APIError(APIError.FORBIDDEN, error.message);
     }
+
+    const user = await getUserById(userID);
+    if (!user) throw new APIError(APIError.BAD_REQUEST, "No user found");
+
+    if (user.isDisabled) {
+      throw new APIError(
+        APIError.FORBIDDEN,
+        "You have been blocked by the system for repeated violations of the Code of Conduct"
+      );
+    }
+
+    if (user.refreshToken !== req.body.refreshToken) {
+      throw new APIError(APIError.FORBIDDEN, "Invalid refresh token");
+    }
+
+    const token = sign({
+      userID: userID,
+      department: user.department,
+      role: user.role,
+    });
+
+    res.status(200).json({
+      code: "OK",
+      result: "SUCCESS",
+      token,
+    });
   } catch (error) {
-    res.status(500).send(new Error("INTERNAL_SERVER_ERROR", error.message));
+    next(error);
   }
 };
 

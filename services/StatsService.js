@@ -7,7 +7,7 @@ class StatsService {
    * Finds all the issues from the database.
    * @returns {Promise<Document[]>} List of all the issues.
    */
-  async getAllIssues() {
+  static async getAllIssues() {
     return await Issue.find({
       isDeleted: false,
     }).sort("-upvotes");
@@ -17,7 +17,7 @@ class StatsService {
    * Finds all authority users
    * @returns {Promise<Document[]} List of all authority personnels
    */
-  async getAllAuthority() {
+  static async getAllAuthority() {
     return await User.find({
       $or: [
         { role: "auth_level_one" },
@@ -28,4 +28,4 @@ class StatsService {
   }
 }
 
-module.exports = new StatsService();
+module.exports = StatsService;

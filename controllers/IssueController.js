@@ -26,7 +26,7 @@ const {
   },
 } = require("../misc");
 
-const { FILE_SERVER_URI } = require("../config");
+const { FILE_SERVER_PUBLIC } = require("../config");
 
 /** Threshold value for reports count on an issue  */
 const ISSUE_REPORTS_THRESHOLD = 75;
@@ -240,11 +240,11 @@ const getIssuesByPhraseController = async function (req, res) {
         role === "auth_level_three"
           ? await getAllIssuesByPhrase(phrase, pageNumber, pageLimit)
           : await getAllIssuesByPhraseAndDepartment(
-              phrase,
-              department,
-              pageNumber,
-              pageLimit
-            );
+            phrase,
+            department,
+            pageNumber,
+            pageLimit
+          );
 
       res.status(200).json({
         code: "OK",
@@ -388,7 +388,7 @@ const saveImagesController = function (req, res) {
         for (let index = 0; index < data.files.length; index++) {
           const file = data.files[index];
 
-          const url = `${FILE_SERVER_URI}/${file.path}`;
+          const url = `${FILE_SERVER_PUBLIC}/${file.path}`;
           paths.push(url);
 
           const { id: imageId } = await Image.create({
@@ -451,7 +451,7 @@ const addIssueController = async function (req, res) {
     if (errors) {
       res.status(400).send(new Error("BAD_REQUEST", errors));
     } else {
-      const isNSFW = await hasNSFWText(title, description, scope);
+      const isNSFW = await hasNSFWText(title, description);
 
       const { id: issueId } = await createIssue(
         title,

@@ -6,7 +6,7 @@ const { extname } = require("path");
 const { randomBytes } = require("crypto");
 
 const Image = require("../models");
-const { FILE_SERVER_URI } = require("../config");
+const { FILE_SERVER_PUBLIC } = require("../config");
 
 /** Maximum image count */
 const MAX_IMAGE_COUNT = 3;
@@ -58,7 +58,7 @@ const uploadImages = async (images, userId) => {
   images.forEach(({ path }) => form.append("images", createReadStream(path)));
 
   try {
-    const response = await axios.post(`${FILE_SERVER_URI}/image`, form, {
+    const response = await axios.post(`${FILE_SERVER_PUBLIC}/image`, form, {
       headers: form.getHeaders(),
     });
 

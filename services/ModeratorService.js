@@ -11,7 +11,7 @@ const {
 const NSFW_PROBABILITY_THRESHOLD = 0.7;
 
 class ModeratorService {
-  constructor() {}
+  constructor() { }
 
   /**
    * Screens text for any NSFW content
@@ -21,7 +21,7 @@ class ModeratorService {
   async hasNSFWText(...strings) {
     // TODO: modify to allow strings more than 1024 characters to be
     // screened for NSFW content
-    const text = combineStrings(strings).substr(0, 1024);
+    const text = combineStrings(...strings).substr(0, 1024);
 
     try {
       const { status, data } = await axios.post(
@@ -47,6 +47,7 @@ class ModeratorService {
         Category3.Score > NSFW_PROBABILITY_THRESHOLD
       );
     } catch (error) {
+      console.log(error);
       throw new Error("Text Screening Failed");
     }
   }
@@ -76,6 +77,7 @@ class ModeratorService {
 
       return data.IsImageAdultClassified || data.IsImageRacyClassified;
     } catch (error) {
+      console.log(error);
       throw new Error("Image Screening Failed");
     }
   }

@@ -1,5 +1,7 @@
 # issue-tracker
 
+## Design Docs - [Report](https://docs.google.com/document/d/1bSxKplzKEExaDO_hDHGbS8rYdlYFd403Kzm9HlsdJuc/edit?usp=sharing) | [Discussions](https://docs.google.com/document/d/1JIzv47-MdkER7FllHeEmqFzIFCkucpuBuT2OBrFL0D4/edit) | [MoM](https://docs.google.com/document/d/1kR4PYiB2ZeFXUeXK2MlCa8alAgitnjbMccxorV35W9A/edit)
+
 ## Setup the dev env
 
 ### Windows
